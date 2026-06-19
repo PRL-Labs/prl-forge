@@ -4,14 +4,15 @@ import (
 	"context"
 	"log"
 	"net/http"
-	
+	"github.com/techobg/prl-forge/internal/config"
+	"fmt"
 )
 
 type Server struct {
 	httpServer *http.Server
 }
 
-func New() *Server {
+func New(cfg *config.Config) *Server {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
@@ -25,12 +26,14 @@ func New() *Server {
 }`))
 	})
 
-	return &Server{
-		httpServer: &http.Server{
-			Addr:    ":8080",
-			Handler: mux,
-		},
-	}
+	addr := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)
+
+return &Server{
+	httpServer: &http.Server{
+		Addr:    addr,
+		Handler: mux,
+	},
+}
 }
 
 func (s *Server) Start() error {
