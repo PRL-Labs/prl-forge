@@ -1,7 +1,13 @@
 package main
 
-import "fmt"
+import (
+	"log"
+
+	"github.com/techobg/prl-forge/internal/app"
+)
 
 func main() {
-	fmt.Println("🚀 PRL Forge starting...")
+	if err := app.New().Run(); err != nil {
+		log.Fatal(err)
+	}
 }
