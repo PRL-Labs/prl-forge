@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"log"
 	"net"
+	"github.com/techobg/prl-forge/internal/stratum/protocol"
 )
 
 type Session struct {
@@ -12,10 +13,8 @@ type Session struct {
 
 	Subscribed bool
 	Authorized bool
-
 	Wallet    string
 	Worker    string
-
 	Difficulty float64
 }
 
@@ -31,12 +30,23 @@ func (s *Session) Send(v any) error {
 		return err
 	}
 
+	log.Printf("SEND >>> %s", string(data))
+
 	data = append(data, '\n')
 
 	_, err = s.conn.Write(data)
 	return err
-}
 
+}
+func (s *Session) Notify(method string, params interface{}) error {
+	msg := protocol.Notification{
+		ID:     nil,
+		Method: method,
+		Params: params,
+	}
+
+	return s.Send(msg)
+}
 func (s *Session) Run() {
 	defer s.conn.Close()
 

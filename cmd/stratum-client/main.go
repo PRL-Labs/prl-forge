@@ -17,10 +17,9 @@ func main() {
 
 	fmt.Println("Connected!")
 
-	// --------------------------------------------------
-	// mining.subscribe
-	// --------------------------------------------------
-
+	// -----------------------------
+	// Subscribe
+	// -----------------------------
 	subscribe := `{"id":1,"method":"mining.subscribe","params":[]}` + "\n"
 
 	fmt.Println(">>>", subscribe)
@@ -36,10 +35,9 @@ func main() {
 
 	fmt.Println("<<<", reply)
 
-	// --------------------------------------------------
-	// mining.authorize
-	// --------------------------------------------------
-
+	// -----------------------------
+	// Authorize
+	// -----------------------------
 	authorize := `{"id":2,"method":"mining.authorize","params":["wallet.worker","x"]}` + "\n"
 
 	fmt.Println(">>>", authorize)
@@ -48,10 +46,14 @@ func main() {
 		panic(err)
 	}
 
-	reply, err = reader.ReadString('\n')
-	if err != nil {
-		panic(err)
-	}
+	// Четем всички входящи съобщения
+	for {
+		reply, err := reader.ReadString('\n')
+		if err != nil {
+			fmt.Println("Disconnected:", err)
+			return
+		}
 
-	fmt.Println("<<<", reply)
+		fmt.Println("<<<", reply)
+	}
 }

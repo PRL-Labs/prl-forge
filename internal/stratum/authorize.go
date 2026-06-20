@@ -26,10 +26,11 @@ func HandleAuthorize(session *Session, req *protocol.Request) {
 
 	wallet := params[0]
 	password := params[1]
-    session.Authorized = true
-session.Wallet = wallet
-session.Worker = wallet // временно
-session.Difficulty = 1
+
+	session.Authorized = true
+	session.Wallet = wallet
+	session.Worker = wallet // временно
+	session.Difficulty = 1
 
 	log.Printf("Wallet: %s", wallet)
 	log.Printf("Password: %s", password)
@@ -42,5 +43,27 @@ session.Difficulty = 1
 
 	if err := session.Send(resp); err != nil {
 		log.Println(err)
+		return
+	}
+
+	log.Println("Sending difficulty...")
+
+	if err := session.Notify(
+		"mining.set_difficulty",
+		[]any{1.0},
+	); err != nil {
+		log.Println("Notify error:", err)
+	} else {
+		log.Println("Difficulty OK")
+	}
+
+	job := NewDummyJob()
+
+	log.Println("Sending job...")
+
+	if err := SendJob(session, job); err != nil {
+		log.Println("Job error:", err)
+	} else {
+		log.Println("Job OK")
 	}
 }

@@ -13,3 +13,9 @@ type Response struct {
 	Result interface{} `json:"result"`
 	Error  interface{} `json:"error"`
 }
+
+type Notification struct {
+	ID     any         `json:"id"`
+	Method string      `json:"method"`
+	Params interface{} `json:"params"`
+}
