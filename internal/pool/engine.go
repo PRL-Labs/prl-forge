@@ -21,3 +21,7 @@ func (e *Engine) NewJob() *Job {
 func (e *Engine) GetJob(id string) (*Job, bool) {
 	return e.Jobs.Get(id)
 }
+	func (e *Engine) SetCurrentJob(job *Job) {
+	e.Jobs.SetCurrent(job)
+
+}

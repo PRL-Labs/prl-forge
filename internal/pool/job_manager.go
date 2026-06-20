@@ -58,3 +58,11 @@ func (jm *JobManager) Get(id string) (*Job, bool) {
 	job, ok := jm.jobs[id]
 	return job, ok
 }
+	func (jm *JobManager) SetCurrent(job *Job) {
+	jm.mu.Lock()
+	defer jm.mu.Unlock()
+
+	jm.jobs[job.ID] = job
+	jm.current = job
+
+}
