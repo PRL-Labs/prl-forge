@@ -1,17 +1,31 @@
 package pool
 
+import "github.com/techobg/prl-forge/internal/pearl"
+
 type Engine struct {
-	Jobs *JobManager
+	Jobs    *JobManager
+	Builder *Builder
 }
 
 func NewEngine() *Engine {
 	return &Engine{
-		Jobs: NewJobManager(),
+		Jobs:    NewJobManager(),
+		Builder: NewBuilder(),
 	}
 }
 
 func (e *Engine) CurrentJob() *Job {
 	return e.Jobs.Current()
+}
+
+func (e *Engine) SetCurrentJob(job *Job) {
+	e.Jobs.SetCurrent(job)
+}
+
+func (e *Engine) BuildJob(tpl *pearl.BlockTemplate) *Job {
+	job := e.Builder.Build(tpl)
+	e.SetCurrentJob(job)
+	return job
 }
 
 func (e *Engine) NewJob() *Job {
@@ -20,8 +34,4 @@ func (e *Engine) NewJob() *Job {
 
 func (e *Engine) GetJob(id string) (*Job, bool) {
 	return e.Jobs.Get(id)
-}
-	func (e *Engine) SetCurrentJob(job *Job) {
-	e.Jobs.SetCurrent(job)
-
 }
