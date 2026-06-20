@@ -1,9 +1,4 @@
-package stratum
-
-var (
-	jobManager   = NewJobManager()
-	shareManager = NewShareManager()
-)
+package pool
 
 type Job struct {
 	ID       string

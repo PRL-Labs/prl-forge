@@ -59,6 +59,7 @@ func main() {
 			submit := `{"id":3,"method":"mining.submit","params":["wallet.worker","1","00000001","68555555","deadbeef"]}` + "\n"
 
 			fmt.Println(">>>", strings.TrimSpace(submit))
+fmt.Println()
 
 			if _, err := conn.Write([]byte(submit)); err != nil {
 				panic(err)

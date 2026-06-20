@@ -3,6 +3,7 @@ package stratum
 import (
 	"encoding/json"
 	"log"
+	"time"
 
 	"github.com/techobg/prl-forge/internal/stratum/protocol"
 )
@@ -35,6 +36,38 @@ func HandleSubmit(session *Session, req *protocol.Request) {
 	log.Printf("ExtraNonce2 : %s", extraNonce2)
 	log.Printf("NTime       : %s", nTime)
 	log.Printf("Nonce       : %s", nonce)
+
+	job, ok := jobManager.Get(jobID)
+	if !ok {
+		log.Printf("❌ Unknown job: %s", jobID)
+
+		resp := protocol.Response{
+			ID:     req.ID,
+			Result: false,
+			Error:  []any{21, "Job not found", nil},
+		}
+
+		_ = session.Send(resp)
+		return
+	}
+
+	log.Printf("✅ Job %s found", job.ID)
+
+	share := &Share{
+		Worker:      worker,
+		Wallet:      session.Wallet,
+		JobID:       jobID,
+		ExtraNonce2: extraNonce2,
+		NTime:       nTime,
+		Nonce:       nonce,
+		Difficulty:  session.Difficulty,
+		Accepted:    true,
+		Time:        time.Now(),
+	}
+
+	shareManager.Add(share)
+
+	log.Printf("📊 Total shares: %d", shareManager.Count())
 
 	resp := protocol.Response{
 		ID:     req.ID,

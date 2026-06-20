@@ -2,7 +2,8 @@ package stratum
 
 import "log"
 
-func SendJob(session *Session, job *Job) error {
+func SendCurrentJob(session *Session) error {
+	job := jobManager.NewJob()
 
 	err := session.Notify(
 		"mining.notify",
