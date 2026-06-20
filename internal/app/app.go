@@ -4,12 +4,17 @@ import (
 	"log"
 
 	"github.com/techobg/prl-forge/internal/api"
+	"github.com/techobg/prl-forge/internal/api/handlers"
 	"github.com/techobg/prl-forge/internal/config"
+	"github.com/techobg/prl-forge/internal/pool"
+	"github.com/techobg/prl-forge/internal/stratum"
 )
 
 type App struct {
-	cfg *config.Config
-	api *api.Server
+	cfg      *config.Config
+	api      *api.Server
+	stratum  *stratum.Server
+	pool     *pool.Pool
 }
 
 func New() (*App, error) {
@@ -18,18 +23,25 @@ func New() (*App, error) {
 		return nil, err
 	}
 
+	poolCore := pool.New()
+	handlers.SetPool(poolCore)
+
 	return &App{
-		cfg: cfg,
-		api: api.New(cfg),
+		cfg:      cfg,
+		api:      api.New(cfg),
+		stratum:  stratum.New(":3333"),
+		pool:     poolCore,
 	}, nil
 }
 
 func (a *App) Run() error {
-	log.Printf(
-		"🚀 Starting %s v%s",
-		a.cfg.App.Name,
-		a.cfg.App.Version,
-	)
+	log.Printf("🚀 Starting %s v%s", a.cfg.App.Name, a.cfg.App.Version)
 
-	return a.api.Start()
+	go func() {
+		if err := a.api.Start(); err != nil {
+			log.Printf("API error: %v", err)
+		}
+	}()
+
+	return a.stratum.Start()
 }

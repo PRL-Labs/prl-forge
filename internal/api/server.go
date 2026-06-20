@@ -2,10 +2,12 @@ package api
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
+
+	"github.com/techobg/prl-forge/internal/api/handlers"
 	"github.com/techobg/prl-forge/internal/config"
-	"fmt"
 )
 
 type Server struct {
@@ -15,6 +17,7 @@ type Server struct {
 func New(cfg *config.Config) *Server {
 	mux := http.NewServeMux()
 
+	// Health endpoint
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
@@ -26,18 +29,21 @@ func New(cfg *config.Config) *Server {
 }`))
 	})
 
+	// Dashboard endpoint
+	mux.HandleFunc("/api/v1/dashboard", handlers.Dashboard)
+
 	addr := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)
 
-return &Server{
-	httpServer: &http.Server{
-		Addr:    addr,
-		Handler: mux,
-	},
-}
+	return &Server{
+		httpServer: &http.Server{
+			Addr:    addr,
+			Handler: mux,
+		},
+	}
 }
 
 func (s *Server) Start() error {
-	log.Println("🌐 HTTP server listening on :8080")
+	log.Printf("🌐 HTTP server listening on %s", s.httpServer.Addr)
 	return s.httpServer.ListenAndServe()
 }
 
