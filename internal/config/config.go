@@ -14,6 +14,13 @@ type Config struct {
 		Host string `mapstructure:"host"`
 		Port int    `mapstructure:"port"`
 	} `mapstructure:"server"`
+
+	Pearl struct {
+		Host     string `mapstructure:"host"`
+		Port     int    `mapstructure:"port"`
+		User     string `mapstructure:"user"`
+		Password string `mapstructure:"password"`
+	} `mapstructure:"pearl"`
 }
 
 func Load() (*Config, error) {

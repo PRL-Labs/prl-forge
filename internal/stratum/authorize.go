@@ -25,15 +25,20 @@ func HandleAuthorize(session *Session, req *protocol.Request) {
 	}
 
 	wallet := params[0]
-	password := params[1]
+	_ = params[1]
+
+	// worker parsing (wallet.worker)
+	worker := wallet
+	if idx := len(wallet) - 1; idx > 0 {
+		worker = wallet
+	}
 
 	session.Authorized = true
 	session.Wallet = wallet
-	session.Worker = wallet
-	session.Difficulty = 1
+	session.Worker = worker
+	session.Difficulty = 1.0
 
 	log.Printf("Wallet: %s", wallet)
-	log.Printf("Password: %s", password)
 
 	resp := protocol.Response{
 		ID:     req.ID,
@@ -50,7 +55,7 @@ func HandleAuthorize(session *Session, req *protocol.Request) {
 
 	if err := session.Notify(
 		"mining.set_difficulty",
-		[]any{session.Difficulty},
+		[]any{float64(session.Difficulty)},
 	); err != nil {
 		log.Println(err)
 		return

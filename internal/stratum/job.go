@@ -10,6 +10,16 @@ var (
 )
 
 // Job е alias към pool.Job.
-// TODO(M3): След миграцията всички файлове в stratum ще използват
-// директно pool.Job и този alias ще бъде премахнат.
 type Job = pool.Job
+
+func SetCurrentJob(job *Job) {
+	jobManager.SetCurrent(job)
+}
+
+func CurrentJob() *Job {
+	return jobManager.Current()
+}
+
+func GetJob(id string) (*Job, bool) {
+	return jobManager.Get(id)
+}

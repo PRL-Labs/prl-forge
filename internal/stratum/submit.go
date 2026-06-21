@@ -31,27 +31,19 @@ func HandleSubmit(session *Session, req *protocol.Request) {
 	nTime := params[3]
 	nonce := params[4]
 
-	log.Printf("Worker      : %s", worker)
-	log.Printf("Job ID      : %s", jobID)
-	log.Printf("ExtraNonce2 : %s", extraNonce2)
-	log.Printf("NTime       : %s", nTime)
-	log.Printf("Nonce       : %s", nonce)
-
-	job, ok := jobManager.Get(jobID)
+	job, ok := GetJob(jobID)
 	if !ok {
 		log.Printf("❌ Unknown job: %s", jobID)
 
-		resp := protocol.Response{
+		_ = session.Send(protocol.Response{
 			ID:     req.ID,
 			Result: false,
 			Error:  []any{21, "Job not found", nil},
-		}
-
-		_ = session.Send(resp)
+		})
 		return
 	}
 
-	log.Printf("✅ Job %s found", job.ID)
+	log.Printf("Worker: %s Job: %s", worker, jobID)
 
 	share := &Share{
 		Worker:      worker,
@@ -61,24 +53,31 @@ func HandleSubmit(session *Session, req *protocol.Request) {
 		NTime:       nTime,
 		Nonce:       nonce,
 		Difficulty:  session.Difficulty,
-		Accepted:    true,
 		Time:        time.Now(),
 	}
 
+	// REAL validation gate
+	if err := ValidateShare(share, job); err != nil {
+		log.Printf("❌ Share rejected: %v", err)
+
+		_ = session.Send(protocol.Response{
+			ID:     req.ID,
+			Result: false,
+			Error:  []any{20, "Invalid share", nil},
+		})
+		return
+	}
+
+	share.Accepted = true
 	shareManager.Add(share)
 
-	log.Printf("📊 Total shares: %d", shareManager.Count())
+	log.Printf("📊 Shares: %d", shareManager.Count())
 
-	resp := protocol.Response{
+	_ = session.Send(protocol.Response{
 		ID:     req.ID,
 		Result: true,
 		Error:  nil,
-	}
-
-	if err := session.Send(resp); err != nil {
-		log.Println(err)
-		return
-	}
+	})
 
 	log.Println("✅ Share accepted")
 }

@@ -1,7 +1,6 @@
 package stratum
 
 import (
-	"fmt"
 	"sync"
 )
 
@@ -9,7 +8,6 @@ type JobManager struct {
 	mu      sync.RWMutex
 	jobs    map[string]*Job
 	current *Job
-	nextID  uint64
 }
 
 func NewJobManager() *JobManager {
@@ -18,28 +16,12 @@ func NewJobManager() *JobManager {
 	}
 }
 
-func (jm *JobManager) NewJob() *Job {
+func (jm *JobManager) SetCurrent(job *Job) {
 	jm.mu.Lock()
 	defer jm.mu.Unlock()
 
-	jm.nextID++
-
-	job := &Job{
-		ID:       fmt.Sprintf("%d", jm.nextID),
-		PrevHash: "0000000000000000000000000000000000000000000000000000000000000000",
-		Coinb1:   "01000000",
-		Coinb2:   "ffffffff",
-		Merkle:   []string{},
-		Version:  "20000000",
-		NBits:    "1d00ffff",
-		NTime:    "68555555",
-		Clean:    true,
-	}
-
 	jm.jobs[job.ID] = job
 	jm.current = job
-
-	return job
 }
 
 func (jm *JobManager) Current() *Job {
