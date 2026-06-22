@@ -13,7 +13,7 @@ const (
 type IncompleteHeader struct {
 	Version int32
 
-	PrevBlock []byte
+	PrevBlock  []byte
 	MerkleRoot []byte
 
 	Timestamp uint32

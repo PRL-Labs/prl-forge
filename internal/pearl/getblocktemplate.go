@@ -17,8 +17,8 @@ type BlockTemplate struct {
 	CurTime           int64  `json:"curtime"`
 	Height            int64  `json:"height"`
 
-	CoinbaseValue uint64       `json:"coinbasevalue"`
-	CoinbaseAux   CoinbaseAux  `json:"coinbaseaux"`
+	CoinbaseValue uint64        `json:"coinbasevalue"`
+	CoinbaseAux   CoinbaseAux   `json:"coinbaseaux"`
 	Transactions  []Transaction `json:"transactions"`
 
 	Target string `json:"target,omitempty"`

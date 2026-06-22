@@ -6,8 +6,8 @@ import (
 )
 
 type TxOut struct {
-	Value        int64
-	PkScript     Script
+	Value    int64
+	PkScript Script
 }
 
 func NewTxOut(value int64, pkScript Script) *TxOut {

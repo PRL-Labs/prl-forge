@@ -5,9 +5,6 @@ import (
 	"log"
 )
 
-
-
-
 type NotifyMessage struct {
 	ID     any    `json:"id"`
 	Method string `json:"method"`
@@ -15,11 +12,11 @@ type NotifyMessage struct {
 }
 
 type Params struct {
-	Header       string `json:"header"`
-	Height       int64  `json:"height"`
-	JobID        string `json:"job_id"`
-	Target       string `json:"target"`
-	CertVersion  int    `json:"cert_version"`
+	Header      string `json:"header"`
+	Height      int64  `json:"height"`
+	JobID       string `json:"job_id"`
+	Target      string `json:"target"`
+	CertVersion int    `json:"cert_version"`
 }
 
 func NotifyJob(s *Session, job *Job) error {

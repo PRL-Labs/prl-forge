@@ -9,8 +9,8 @@ import (
 )
 
 type Notify struct {
-	Method string   `json:"method"`
-	Params []any    `json:"params"`
+	Method string `json:"method"`
+	Params []any  `json:"params"`
 }
 
 func main() {

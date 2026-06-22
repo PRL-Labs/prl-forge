@@ -22,9 +22,9 @@ func New(config RPCConfig) *Client {
 
 type rpcRequest struct {
 	JSONRPC string `json:"jsonrpc"`
-	ID       int    `json:"id"`
-	Method   string `json:"method"`
-	Params   any    `json:"params"`
+	ID      int    `json:"id"`
+	Method  string `json:"method"`
+	Params  any    `json:"params"`
 }
 
 type rpcResponse struct {
@@ -37,9 +37,9 @@ func (c *Client) Call(method string, params any, result any) error {
 
 	reqBody := rpcRequest{
 		JSONRPC: "2.0",
-		ID:       1,
-		Method:   method,
-		Params:   params,
+		ID:      1,
+		Method:  method,
+		Params:  params,
 	}
 
 	data, err := json.Marshal(reqBody)

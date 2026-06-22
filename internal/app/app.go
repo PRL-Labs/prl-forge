@@ -14,13 +14,13 @@ import (
 )
 
 type App struct {
-	cfg      *config.Config
-	api      *api.Server
-	stratum  *stratum.Server
-	pool     *pool.Pool
-	engine   *pool.Engine
-	client   *pearl.Client
-	updater  *updater.Updater
+	cfg     *config.Config
+	api     *api.Server
+	stratum *stratum.Server
+	pool    *pool.Pool
+	engine  *pool.Engine
+	client  *pearl.Client
+	updater *updater.Updater
 }
 
 func New() (*App, error) {
@@ -51,13 +51,13 @@ func New() (*App, error) {
 	)
 
 	return &App{
-		cfg:      cfg,
-		api:      api.New(cfg),
-		stratum:  stratumServer,
-		pool:     poolCore,
-		engine:   engine,
-		client:   client,
-		updater:  up,
+		cfg:     cfg,
+		api:     api.New(cfg),
+		stratum: stratumServer,
+		pool:    poolCore,
+		engine:  engine,
+		client:  client,
+		updater: up,
 	}, nil
 }
 

@@ -11,11 +11,11 @@ import (
 
 func main() {
 	client := pearl.New(pearl.RPCConfig{
-    Host:     "127.0.0.1",
-    Port:     44144, // или RPC портът на Pearl
-    User:     "rpcuser",
-    Password: "rpcpassword",
-})
+		Host:     "127.0.0.1",
+		Port:     44144, // или RPC портът на Pearl
+		User:     "rpcuser",
+		Password: "rpcpassword",
+	})
 
 	tpl, err := client.GetBlockTemplate()
 	if err != nil {

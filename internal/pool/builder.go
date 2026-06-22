@@ -39,18 +39,18 @@ func (b *Builder) Build(tpl *pearl.BlockTemplate) *Job {
 	nbits := binary.BigEndian.Uint32(bitsBytes)
 
 	merkleRoot, err := block.BuildMerkleRootFromTemplate(tpl)
-if err != nil {
-	panic(err)
-}
+	if err != nil {
+		panic(err)
+	}
 
-bt := &block.Template{
-	Height:       uint64(tpl.Height),
-	Version:      uint32(tpl.Version),
-	PreviousHash: prevHash,
-	MerkleRoot:   merkleRoot,
-	Timestamp:    uint32(tpl.CurTime),
-	Bits:         nbits,
-}
+	bt := &block.Template{
+		Height:       uint64(tpl.Height),
+		Version:      uint32(tpl.Version),
+		PreviousHash: prevHash,
+		MerkleRoot:   merkleRoot,
+		Timestamp:    uint32(tpl.CurTime),
+		Bits:         nbits,
+	}
 
 	header, err := block.Build(bt)
 	if err != nil {
@@ -63,14 +63,14 @@ bt := &block.Template{
 	}
 
 	job := &Job{
-		ID:             fmt.Sprintf("%d", b.nextID),
-		Height:         tpl.Height,
-		Header:         headerHex,
-		Target:         tpl.Target,
-		CertVersion:    0,
-		CoinbaseValue:  tpl.CoinbaseValue,
-		CoinbaseFlags:  tpl.CoinbaseAux.Flags,
-		Clean:          true,
+		ID:            fmt.Sprintf("%d", b.nextID),
+		Height:        tpl.Height,
+		Header:        headerHex,
+		Target:        tpl.Target,
+		CertVersion:   0,
+		CoinbaseValue: tpl.CoinbaseValue,
+		CoinbaseFlags: tpl.CoinbaseAux.Flags,
+		Clean:         true,
 	}
 
 	return job

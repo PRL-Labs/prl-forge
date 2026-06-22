@@ -103,7 +103,7 @@ func relay(src net.Conn, dst net.Conn, logFile *os.File, prefix string) {
 	}
 
 }
-	func (p *Proxy) Start() error {
+func (p *Proxy) Start() error {
 	return p.Run()
 
 }
