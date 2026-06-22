@@ -63,12 +63,13 @@ func (b *Builder) Build(tpl *pearl.BlockTemplate) *Job {
 	}
 fmt.Printf("Header bytes: %d\n", len(headerHex)/2)
 fmt.Println("RPC Target :", tpl.Target)
+fmt.Println("RPC Bits   :", tpl.Bits)
 	job := &Job{
 	
 		ID:            fmt.Sprintf("%d", b.nextID),
 		Height:        tpl.Height,
 		Header:        headerHex,
-		Target:        tpl.Target,
+		Target:        "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
 		CertVersion:   2,
 		CoinbaseValue: tpl.CoinbaseValue,
 		CoinbaseFlags: tpl.CoinbaseAux.Flags,

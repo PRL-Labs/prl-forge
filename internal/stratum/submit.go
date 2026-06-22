@@ -1,14 +1,21 @@
 package stratum
 
 import (
+	"bytes"
+	"compress/gzip"
+	"encoding/base64"
 	"encoding/json"
+	"io"
 	"log"
-	"time"
 
 	"github.com/techobg/prl-forge/internal/stratum/protocol"
 )
 
-type SubmitParams []string
+type SubmitParams struct {
+	JobID      string `json:"job_id"`
+	PlainProof string `json:"plain_proof"`
+	HS         uint64 `json:"hs"`
+}
 
 func HandleSubmit(session *Session, req *protocol.Request) {
 	log.Println("📤 mining.submit")
@@ -16,7 +23,7 @@ func HandleSubmit(session *Session, req *protocol.Request) {
 	var params SubmitParams
 
 	if err := json.Unmarshal(req.Params, &params); err != nil {
-		log.Printf("submit: invalid params: %v", err)
+		log.Printf("submit decode error: %v", err)
 
 		_ = session.Send(protocol.Response{
 			ID:     req.ID,
@@ -26,70 +33,66 @@ func HandleSubmit(session *Session, req *protocol.Request) {
 		return
 	}
 
-	if len(params) < 5 {
-		log.Printf("submit: expected 5 params, got %d", len(params))
+	log.Printf("JobID      : %s", params.JobID)
+	log.Printf("HS         : %d", params.HS)
+	log.Printf("Proof chars: %d", len(params.PlainProof))
+
+	// Base64 decode
+	proof, err := base64.StdEncoding.DecodeString(params.PlainProof)
+	if err != nil {
+		log.Printf("proof decode error: %v", err)
 
 		_ = session.Send(protocol.Response{
 			ID:     req.ID,
 			Result: false,
-			Error:  []any{20, "Invalid submit parameters", nil},
+			Error:  []any{20, "Invalid proof", nil},
 		})
 		return
 	}
 
-	worker := params[0]
-	jobID := params[1]
-	extraNonce2 := params[2]
-	nTime := params[3]
-	nonce := params[4]
+	log.Printf("Proof bytes: %d", len(proof))
 
-	job, ok := GetJob(jobID)
-	if !ok {
-		log.Printf("submit: unknown job %s", jobID)
+	// Gzip decompress
+	zr, err := gzip.NewReader(bytes.NewReader(proof))
+	if err != nil {
+		log.Printf("gzip error: %v", err)
 
 		_ = session.Send(protocol.Response{
 			ID:     req.ID,
 			Result: false,
-			Error:  []any{21, "Job not found", nil},
+			Error:  []any{20, "Invalid gzip proof", nil},
 		})
 		return
 	}
+	defer zr.Close()
 
-	share := &Share{
-		Worker:      worker,
-		Wallet:      session.Wallet,
-		JobID:       jobID,
-		ExtraNonce2: extraNonce2,
-		NTime:       nTime,
-		Nonce:       nonce,
-		Difficulty:  session.Difficulty,
-		Time:        time.Now(),
-	}
-
-	if err := ValidateShare(share, job); err != nil {
-		log.Printf("submit: share rejected: %v", err)
+	decoded, err := io.ReadAll(zr)
+	if err != nil {
+		log.Printf("gzip read error: %v", err)
 
 		_ = session.Send(protocol.Response{
 			ID:     req.ID,
 			Result: false,
-			Error:  []any{20, "Invalid share", nil},
+			Error:  []any{20, "Invalid proof payload", nil},
 		})
 		return
 	}
 
-	share.Accepted = true
-	shareManager.Add(share)
+	log.Printf("Decoded proof: %d bytes", len(decoded))
 
-	log.Printf(
-		"✅ Share accepted worker=%s job=%s total=%d",
-		worker,
-		jobID,
-		shareManager.Count(),
-	)
+	n := 64
+	if len(decoded) < n {
+		n = len(decoded)
+	}
 
+	log.Printf("Proof prefix: %x", decoded[:n])
+
+	// DEBUG ONLY
 	_ = session.Send(protocol.Response{
 		ID:     req.ID,
 		Result: true,
 		Error:  nil,
 	})
+
+	log.Println("✅ DEBUG submit accepted")
 }
