@@ -27,15 +27,12 @@ func (jm *JobManager) NewJob() *Job {
 	jm.nextID++
 
 	job := &Job{
-		ID:       fmt.Sprintf("%d", jm.nextID),
-		PrevHash: "0000000000000000000000000000000000000000000000000000000000000000",
-		Coinb1:   "01000000",
-		Coinb2:   "ffffffff",
-		Merkle:   []string{},
-		Version:  "20000000",
-		NBits:    "1d00ffff",
-		NTime:    "68555555",
-		Clean:    true,
+		ID:          fmt.Sprintf("%d", jm.nextID),
+		Header:      "",
+		Target:      "",
+		Height:      0,
+		CertVersion: 0,
+		Clean:       true,
 	}
 
 	jm.jobs[job.ID] = job
@@ -58,11 +55,11 @@ func (jm *JobManager) Get(id string) (*Job, bool) {
 	job, ok := jm.jobs[id]
 	return job, ok
 }
-	func (jm *JobManager) SetCurrent(job *Job) {
+
+func (jm *JobManager) SetCurrent(job *Job) {
 	jm.mu.Lock()
 	defer jm.mu.Unlock()
 
 	jm.jobs[job.ID] = job
 	jm.current = job
-
 }

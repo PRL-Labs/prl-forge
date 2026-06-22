@@ -12,9 +12,9 @@ func main() {
 
 	client := pearl.New(pearl.RPCConfig{
 		Host:     "127.0.0.1",
-		Port:     44107, // Смени с RPC порта на Pearl
-		User:     "forge",
-		Password: "forge123",
+		Port:     44144, // Смени с RPC порта на Pearl
+		User:     "rpcuser",
+		Password: "rpcpassword",
 	})
 
 	template, err := client.GetBlockTemplate()

@@ -1,8 +1,11 @@
 package pool
 
 import (
+	"encoding/binary"
+	"encoding/hex"
 	"fmt"
 
+	"github.com/techobg/prl-forge/internal/block"
 	"github.com/techobg/prl-forge/internal/pearl"
 )
 
@@ -17,26 +20,57 @@ func NewBuilder() *Builder {
 func (b *Builder) Build(tpl *pearl.BlockTemplate) *Job {
 	b.nextID++
 
+	// Decode previous block hash (HEX -> []byte)
+	prevHash, err := hex.DecodeString(tpl.PreviousBlockHash)
+	if err != nil {
+		panic(fmt.Errorf("invalid previous block hash: %w", err))
+	}
+
+	// Decode nBits (HEX -> uint32)
+	bitsBytes, err := hex.DecodeString(tpl.Bits)
+	if err != nil {
+		panic(fmt.Errorf("invalid bits: %w", err))
+	}
+
+	if len(bitsBytes) != 4 {
+		panic(fmt.Errorf("invalid bits length: %d", len(bitsBytes)))
+	}
+
+	nbits := binary.BigEndian.Uint32(bitsBytes)
+
+	merkleRoot, err := block.BuildMerkleRootFromTemplate(tpl)
+if err != nil {
+	panic(err)
+}
+
+bt := &block.Template{
+	Height:       uint64(tpl.Height),
+	Version:      uint32(tpl.Version),
+	PreviousHash: prevHash,
+	MerkleRoot:   merkleRoot,
+	Timestamp:    uint32(tpl.CurTime),
+	Bits:         nbits,
+}
+
+	header, err := block.Build(bt)
+	if err != nil {
+		panic(err)
+	}
+
+	headerHex, err := header.Hex()
+	if err != nil {
+		panic(err)
+	}
+
 	job := &Job{
 		ID:             fmt.Sprintf("%d", b.nextID),
 		Height:         tpl.Height,
-		PrevHash:       tpl.PreviousBlockHash,
-		Version:        fmt.Sprintf("%08x", uint32(tpl.Version)),
-		NBits:          tpl.Bits,
-		NTime:          fmt.Sprintf("%08x", uint32(tpl.CurTime)),
+		Header:         headerHex,
 		Target:         tpl.Target,
+		CertVersion:    0,
 		CoinbaseValue:  tpl.CoinbaseValue,
 		CoinbaseFlags:  tpl.CoinbaseAux.Flags,
-		ExtraNonce1:    fmt.Sprintf("%08x", b.nextID),
-		ExtraNonce2Size: 4,
-		Coinb1:         "01000000",
-		Coinb2:         "ffffffff",
-		Merkle:         make([]string, 0, len(tpl.Transactions)),
 		Clean:          true,
-	}
-
-	for _, tx := range tpl.Transactions {
-		job.Merkle = append(job.Merkle, tx.Hash)
 	}
 
 	return job

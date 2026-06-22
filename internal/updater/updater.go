@@ -41,7 +41,6 @@ func New(
 
 func (u *Updater) Start() {
 	go func() {
-
 		for {
 
 			template, err := u.rpc.GetBlockTemplate()
@@ -51,7 +50,6 @@ func (u *Updater) Start() {
 				continue
 			}
 
-			// skip if same chain state
 			if template.PreviousBlockHash == u.lastPrevHash &&
 				template.Target == u.lastTarget &&
 				template.Height == u.lastHeight {
@@ -75,13 +73,11 @@ func (u *Updater) Start() {
 			log.Printf("Transactions : %d", len(template.Transactions))
 			log.Println("========================================")
 
-			// build job
 			job := u.engine.BuildJob(template)
 
-			// IMPORTANT: register job globally for submit lookup
-			stratum.SetCurrentJob(job)
+			// Engine вече пази CurrentJob.
+			// Няма повече stratum.SetCurrentJob()
 
-			// broadcast to miners
 			if u.stratum != nil {
 				u.stratum.Broadcast(job)
 			}

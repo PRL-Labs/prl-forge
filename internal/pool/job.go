@@ -3,27 +3,26 @@ package pool
 type Job struct {
 	ID string
 
+	// Block information
 	Height int64
+	Header string
+	Target string
 
 	PrevHash string
+	Coinb1   string
+	Coinb2   string
+	Merkle   []string
+	Version  string
+	NBits    string
+	NTime    string
 
-	Coinb1 string
-	Coinb2 string
+	// Pearl certificate
+	CertVersion int
 
-	Merkle []string
+	// Данни от BlockTemplate
+	CoinbaseValue uint64
+	CoinbaseFlags string
 
-	Version string
-	NBits   string
-	NTime   string
-
-	// Данни от Pearl BlockTemplate
-	Target         string
-	CoinbaseValue  uint64
-	CoinbaseFlags  string
-
-	// Подготовка за Stratum
-	ExtraNonce1     string
-	ExtraNonce2Size int
-
+	// За бъдеща submit проверка
 	Clean bool
 }

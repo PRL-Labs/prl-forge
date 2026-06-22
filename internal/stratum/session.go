@@ -3,8 +3,10 @@ package stratum
 import (
 	"bufio"
 	"encoding/json"
+	"io"
 	"log"
 	"net"
+
 	"github.com/techobg/prl-forge/internal/stratum/protocol"
 )
 
@@ -13,8 +15,10 @@ type Session struct {
 
 	Subscribed bool
 	Authorized bool
-	Wallet    string
-	Worker    string
+
+	Wallet string
+	Worker string
+
 	Difficulty float64
 }
 
@@ -36,9 +40,9 @@ func (s *Session) Send(v any) error {
 
 	_, err = s.conn.Write(data)
 	return err
-
 }
-func (s *Session) Notify(method string, params interface{}) error {
+
+func (s *Session) Notify(method string, params any) error {
 	msg := protocol.Notification{
 		ID:     nil,
 		Method: method,
@@ -47,22 +51,36 @@ func (s *Session) Notify(method string, params interface{}) error {
 
 	return s.Send(msg)
 }
-func (s *Session) Run() {
-	defer s.conn.Close()
 
+func (s *Session) Run() {
+	defer func() {
+		log.Println("========== CONNECTION CLOSED ==========")
+		_ = s.conn.Close()
+	}()
+
+	log.Println("========== NEW CONNECTION ==========")
+	log.Printf("Remote: %s", s.conn.RemoteAddr())
 	log.Println("Session started")
 
 	scanner := bufio.NewScanner(s.conn)
 
+	// Позволява по-големи JSON пакети
+	buf := make([]byte, 0, 64*1024)
+	scanner.Buffer(buf, 1024*1024)
+
 	for scanner.Scan() {
 		line := scanner.Text()
+
+		if line == "" {
+			continue
+		}
 
 		log.Printf("RAW >>> %s", line)
 
 		s.dispatch(line)
 	}
 
-	if err := scanner.Err(); err != nil {
+	if err := scanner.Err(); err != nil && err != io.EOF {
 		log.Printf("Scanner error: %v", err)
 	}
 

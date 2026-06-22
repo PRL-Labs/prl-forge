@@ -16,12 +16,24 @@ func HandleSubmit(session *Session, req *protocol.Request) {
 	var params SubmitParams
 
 	if err := json.Unmarshal(req.Params, &params); err != nil {
-		log.Printf("Invalid submit params: %v", err)
+		log.Printf("submit: invalid params: %v", err)
+
+		_ = session.Send(protocol.Response{
+			ID:     req.ID,
+			Result: false,
+			Error:  []any{20, "Invalid submit parameters", nil},
+		})
 		return
 	}
 
 	if len(params) < 5 {
-		log.Printf("Invalid submit request (%d params)", len(params))
+		log.Printf("submit: expected 5 params, got %d", len(params))
+
+		_ = session.Send(protocol.Response{
+			ID:     req.ID,
+			Result: false,
+			Error:  []any{20, "Invalid submit parameters", nil},
+		})
 		return
 	}
 
@@ -33,7 +45,7 @@ func HandleSubmit(session *Session, req *protocol.Request) {
 
 	job, ok := GetJob(jobID)
 	if !ok {
-		log.Printf("❌ Unknown job: %s", jobID)
+		log.Printf("submit: unknown job %s", jobID)
 
 		_ = session.Send(protocol.Response{
 			ID:     req.ID,
@@ -42,8 +54,6 @@ func HandleSubmit(session *Session, req *protocol.Request) {
 		})
 		return
 	}
-
-	log.Printf("Worker: %s Job: %s", worker, jobID)
 
 	share := &Share{
 		Worker:      worker,
@@ -56,9 +66,8 @@ func HandleSubmit(session *Session, req *protocol.Request) {
 		Time:        time.Now(),
 	}
 
-	// REAL validation gate
 	if err := ValidateShare(share, job); err != nil {
-		log.Printf("❌ Share rejected: %v", err)
+		log.Printf("submit: share rejected: %v", err)
 
 		_ = session.Send(protocol.Response{
 			ID:     req.ID,
@@ -71,13 +80,16 @@ func HandleSubmit(session *Session, req *protocol.Request) {
 	share.Accepted = true
 	shareManager.Add(share)
 
-	log.Printf("📊 Shares: %d", shareManager.Count())
+	log.Printf(
+		"✅ Share accepted worker=%s job=%s total=%d",
+		worker,
+		jobID,
+		shareManager.Count(),
+	)
 
 	_ = session.Send(protocol.Response{
 		ID:     req.ID,
 		Result: true,
 		Error:  nil,
 	})
-
-	log.Println("✅ Share accepted")
 }

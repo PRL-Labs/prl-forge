@@ -1,6 +1,12 @@
 package stratum
 
-import "log"
+import (
+	"log"
+
+	stratumadapter "github.com/techobg/prl-forge/internal/adapter/stratum"
+)
+
+var adapter = stratumadapter.NewSRBMinerAdapter()
 
 func NotifyJob(session *Session, job *Job) error {
 	if job == nil {
@@ -8,32 +14,29 @@ func NotifyJob(session *Session, job *Job) error {
 		return nil
 	}
 
-	// Serialize merkle properly (miners expect array, not Go slice)
-	merkle := make([]string, len(job.Merkle))
-	copy(merkle, job.Merkle)
-
-	err := session.Notify(
-		"mining.notify",
-		[]any{
-			job.ID,
-			job.PrevHash,
-			job.Coinb1,
-			job.Coinb2,
-			merkle,
-			job.Version,
-			job.NBits,
-			job.NTime,
-			job.Clean,
-		},
-	)
+	msg, err := adapter.Notify(job)
 	if err != nil {
 		return err
 	}
 
-	log.Printf("📦 Job %s sent (height=%d)", job.ID, job.Height)
+	if err := session.Send(msg); err != nil {
+		return err
+	}
+
+	log.Printf(
+		"📦 Pearl job %s sent (height=%d)",
+		job.ID,
+		job.Height,
+	)
+
 	return nil
 }
 
 func SendCurrentJob(session *Session) error {
-	return NotifyJob(session, CurrentJob())
+	job := CurrentJob()
+	if job == nil {
+		return nil
+	}
+
+	return NotifyJob(session, job)
 }

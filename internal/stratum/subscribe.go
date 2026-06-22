@@ -11,9 +11,8 @@ func HandleSubscribe(session *Session, req *protocol.Request) {
 
 	session.Subscribed = true
 
-	// REAL Stratum response format
-	extraNonce1 := "00000001"
-	extraNonce2Size := 4
+	const extraNonce1 = "00000001"
+	const extraNonce2Size = 4
 
 	resp := protocol.Response{
 		ID: req.ID,
@@ -29,12 +28,9 @@ func HandleSubscribe(session *Session, req *protocol.Request) {
 	}
 
 	if err := session.Send(resp); err != nil {
-		log.Println(err)
+		log.Printf("subscribe response error: %v", err)
 		return
 	}
 
-	// Send initial job immediately
-	if err := SendCurrentJob(session); err != nil {
-		log.Println(err)
-	}
+	log.Println("✅ mining.subscribe completed")
 }

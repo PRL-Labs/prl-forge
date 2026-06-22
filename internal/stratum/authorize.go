@@ -3,34 +3,51 @@ package stratum
 import (
 	"encoding/json"
 	"log"
+	"strings"
 
 	"github.com/techobg/prl-forge/internal/stratum/protocol"
 )
 
 type AuthorizeParams []string
 
+type AuthorizeV2Params struct {
+	Wallet string `json:"wallet"`
+	Agent  string `json:"agent"`
+	Type   string `json:"type"`
+}
+
 func HandleAuthorize(session *Session, req *protocol.Request) {
 	log.Println("🔐 mining.authorize")
 
-	var params AuthorizeParams
+	var wallet string
 
-	if err := json.Unmarshal(req.Params, &params); err != nil {
-		log.Printf("Invalid authorize params: %v", err)
+	// Stratum V1
+	var v1 AuthorizeParams
+	if err := json.Unmarshal(req.Params, &v1); err == nil && len(v1) > 0 {
+		wallet = v1[0]
+	} else {
+		// SRBMiner V2
+		var v2 AuthorizeV2Params
+
+		if err := json.Unmarshal(req.Params, &v2); err != nil {
+			log.Printf("authorize: invalid params: %v", err)
+			return
+		}
+
+		wallet = v2.Wallet
+	}
+
+	if wallet == "" {
+		log.Println("authorize: empty wallet")
 		return
 	}
 
-	if len(params) < 2 {
-		log.Println("Invalid authorize request")
-		return
-	}
+	var worker string
 
-	wallet := params[0]
-	_ = params[1]
-
-	// worker parsing (wallet.worker)
-	worker := wallet
-	if idx := len(wallet) - 1; idx > 0 {
-		worker = wallet
+	parts := strings.SplitN(wallet, ".", 2)
+	if len(parts) == 2 {
+		wallet = parts[0]
+		worker = parts[1]
 	}
 
 	session.Authorized = true
@@ -38,37 +55,34 @@ func HandleAuthorize(session *Session, req *protocol.Request) {
 	session.Worker = worker
 	session.Difficulty = 1.0
 
-	log.Printf("Wallet: %s", wallet)
+	log.Printf("Miner authorized")
+	log.Printf("Wallet : %s", wallet)
+	log.Printf("Worker : %s", worker)
 
-	resp := protocol.Response{
+	// authorize response
+	if err := session.Send(protocol.Response{
 		ID:     req.ID,
 		Result: true,
 		Error:  nil,
-	}
-
-	if err := session.Send(resp); err != nil {
-		log.Println(err)
+	}); err != nil {
+		log.Printf("authorize response: %v", err)
 		return
 	}
 
-	log.Println("Sending difficulty...")
-
+	// difficulty
 	if err := session.Notify(
 		"mining.set_difficulty",
-		[]any{float64(session.Difficulty)},
+		[]any{session.Difficulty},
 	); err != nil {
-		log.Println(err)
+		log.Printf("set_difficulty: %v", err)
 		return
 	}
 
-	log.Println("Difficulty OK")
-
-	log.Println("Sending job...")
-
+	// first job
 	if err := SendCurrentJob(session); err != nil {
-		log.Println(err)
+		log.Printf("notify: %v", err)
 		return
 	}
 
-	log.Println("Job OK")
+	log.Println("✅ Authorization completed")
 }
