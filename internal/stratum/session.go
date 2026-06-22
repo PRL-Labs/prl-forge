@@ -61,6 +61,7 @@ func (s *Session) Run() {
 	log.Println("========== NEW CONNECTION ==========")
 	log.Printf("Remote: %s", s.conn.RemoteAddr())
 	log.Println("Session started")
+	go s.jobLoop()
 
 	scanner := bufio.NewScanner(s.conn)
 

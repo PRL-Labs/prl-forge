@@ -80,9 +80,9 @@ func (u *Updater) Start() {
 			// Engine вече пази CurrentJob.
 			// Няма повече stratum.SetCurrentJob()
 
-			if u.stratum != nil {
-				u.stratum.Broadcast(job)
-			}
+		//	if u.stratum != nil {
+		//		u.stratum.Broadcast(job)
+		//	}
 
 			log.Printf(
 				"📦 Broadcasted job id=%s height=%d prev=%s",
