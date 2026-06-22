@@ -65,19 +65,14 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Println("====================================")
-	fmt.Println("Forge Header")
-	fmt.Println("====================================")
-	fmt.Println()
+	fmt.Println("===== GBT =====")
+fmt.Printf("Height   : %d\n", tpl.Height)
+fmt.Printf("Version  : %08x\n", tpl.Version)
+fmt.Printf("Bits     : %s\n", tpl.Bits)
+fmt.Printf("PrevHash : %s\n", tpl.PreviousBlockHash)
 
-	fmt.Printf("Height      : %d\n", tpl.Height)
-	fmt.Printf("Version     : %d\n", tpl.Version)
-	fmt.Printf("PrevHash    : %x\n", prevHash)
-	fmt.Printf("MerkleRoot  : %x\n", merkleRoot)
-	fmt.Printf("Timestamp   : %d\n", tpl.CurTime)
-	fmt.Printf("Bits        : %08x\n", nbits)
+fmt.Println()
 
-	fmt.Println()
-
-	fmt.Printf("HEADER HEX:\n%s\n", headerHex)
+fmt.Println("===== HEADER =====")
+fmt.Printf("Header   : %s\n", headerHex)
 }

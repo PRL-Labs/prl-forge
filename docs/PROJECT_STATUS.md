@@ -165,4 +165,19 @@ submitblock()
 ↓
 
 Block Accepted
-```
+`
+
+## Milestones
+
+- [x] Clean build
+- [x] GitHub repository
+- [x] Health check
+- [x] Mining package created
+
+### Next
+
+- [ ] Template adapter
+- [ ] Header integration
+- [ ] Replace legacy validator
+- [ ] Proof commitment
+- [ ] submitblock()``

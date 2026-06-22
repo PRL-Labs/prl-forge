@@ -40,10 +40,8 @@ func (h *Header) Serialize() ([]byte, error) {
 }
 
 func (h *Header) Hex() (string, error) {
-	data, err := h.Serialize()
-	if err != nil {
-		return "", err
-	}
-
-	return hex.EncodeToString(data), nil
+	return hex.EncodeToString(h.SerializeWithoutProofCommitment()), nil
 }
+
+	
+

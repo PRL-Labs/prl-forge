@@ -12,6 +12,7 @@ type Response struct {
 	ID     any         `json:"id"`
 	Result interface{} `json:"result"`
 	Error  interface{} `json:"error"`
+	Type   string      `json:"type,omitempty"`
 }
 
 type Notification struct {

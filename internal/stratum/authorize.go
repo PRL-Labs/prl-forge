@@ -55,30 +55,24 @@ func HandleAuthorize(session *Session, req *protocol.Request) {
 	session.Worker = worker
 	session.Difficulty = 1.0
 
-	log.Printf("Miner authorized")
+	log.Println("Miner authorized")
 	log.Printf("Wallet : %s", wallet)
 	log.Printf("Worker : %s", worker)
 
-	// authorize response
+	// Authorize response
 	if err := session.Send(protocol.Response{
 		ID:     req.ID,
 		Result: true,
 		Error:  nil,
+		Type:   "v2",
 	}); err != nil {
 		log.Printf("authorize response: %v", err)
 		return
 	}
 
-	// difficulty
-	if err := session.Notify(
-		"mining.set_difficulty",
-		[]any{session.Difficulty},
-	); err != nil {
-		log.Printf("set_difficulty: %v", err)
-		return
-	}
+	// Pearl V2 (SRBMiner/Kryptex) НЕ изпраща mining.set_difficulty
+	// Веднага след authorize изпращаме първия job.
 
-	// first job
 	if err := SendCurrentJob(session); err != nil {
 		log.Printf("notify: %v", err)
 		return

@@ -74,6 +74,8 @@ func (u *Updater) Start() {
 			log.Println("========================================")
 
 			job := u.engine.BuildJob(template)
+			u.engine.SetCurrentJob(job)
+			log.Printf("ENGINE (Updater): %p", u.engine)
 
 			// Engine вече пази CurrentJob.
 			// Няма повече stratum.SetCurrentJob()

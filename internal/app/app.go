@@ -33,6 +33,7 @@ func New() (*App, error) {
 	handlers.SetPool(poolCore)
 
 	engine := pool.NewEngine()
+	stratum.SetEngine(engine)
 
 	stratumServer := stratum.New(":3333")
 
