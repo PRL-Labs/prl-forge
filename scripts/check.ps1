@@ -23,3 +23,5 @@ gofmt -w .
 
 Write-Host ""
 Write-Host "Done."
+
+go test ./...
