@@ -40,15 +40,17 @@ func New(
 }
 
 func (u *Updater) Start() {
+	log.Println("UPDATER START")
 	go func() {
 		for {
 
 			template, err := u.rpc.GetBlockTemplate()
-			if err != nil {
+if err != nil {
 				log.Printf("Updater: getblocktemplate failed: %v", err)
 				time.Sleep(u.interval)
 				continue
 			}
+			log.Printf("RequiredCertVersion = %d", template.RequiredCertVersion)
 
 			if template.PreviousBlockHash == u.lastPrevHash &&
 				template.Target == u.lastTarget &&

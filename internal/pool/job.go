@@ -22,6 +22,8 @@ type Job struct {
     MiningConfig []byte
 	Target string
     HeaderObj *block.Header
+	Certificate *block.ZKCertificate
+PearlBlock  *block.PearlBlock
 	PrevHash string
 	Coinb1   string
 	Coinb2   string

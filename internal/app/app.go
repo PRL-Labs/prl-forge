@@ -38,11 +38,13 @@ func New() (*App, error) {
 	stratumServer := stratum.New(":3333")
 
 	client := pearl.New(pearl.RPCConfig{
-		Host:     cfg.Pearl.Host,
-		Port:     cfg.Pearl.Port,
-		User:     cfg.Pearl.User,
-		Password: cfg.Pearl.Password,
-	})
+    Host:     cfg.Pearl.Host,
+    Port:     cfg.Pearl.Port,
+    User:     cfg.Pearl.User,
+    Password: cfg.Pearl.Password,
+})
+
+pool.SetClient(client)
 
 	up := updater.New(
 		client,

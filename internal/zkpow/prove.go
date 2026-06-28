@@ -67,6 +67,7 @@ defer C.free(buf)
 
 out.proof_blob = (*C.uint8_t)(buf)
 cHeader := headerToC(header)
+fmt.Println(">>> ENTER FFI")
 rc := C.prove_plain_proof(
 	&cHeader,
 	(*[C.MINING_CONFIG_SERIALIZED_SIZE]C.uint8_t)(unsafe.Pointer(&miningConfig[0])),
@@ -75,7 +76,7 @@ rc := C.prove_plain_proof(
 	&out,
 	(*C.char)(unsafe.Pointer(&errBuf[0])),
 )
-
+fmt.Println("<<< EXIT FFI")
 if rc != 0 {
 	return fmt.Errorf(C.GoString((*C.char)(unsafe.Pointer(&errBuf[0]))))
 }

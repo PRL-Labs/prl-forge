@@ -21,7 +21,7 @@ type BlockTemplate struct {
 	CoinbaseValue uint64        `json:"coinbasevalue"`
 	CoinbaseAux   CoinbaseAux   `json:"coinbaseaux"`
 	Transactions  []Transaction `json:"transactions"`
-
+RequiredCertVersion uint32 `json:"requiredcertversion"`
 	Target string `json:"target,omitempty"`
 }
 
@@ -41,6 +41,6 @@ func (c *Client) GetBlockTemplate() (*BlockTemplate, error) {
 	); err != nil {
 		return nil, err
 	}
-
+println("RequiredCertVersion:", tpl.RequiredCertVersion)
 	return &tpl, nil
 }

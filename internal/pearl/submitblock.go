@@ -1,9 +1,15 @@
 package pearl
 
-func (c *Client) SubmitBlock(blockHex string) error {
+
+import (
+
+"fmt"
+)
+
+func (c *Client) SubmitBlock(block []byte) error {
 	return c.Call(
 		"submitblock",
-		[]string{blockHex},
+		[]any{fmt.Sprintf("%x", block)},
 		nil,
 	)
 }

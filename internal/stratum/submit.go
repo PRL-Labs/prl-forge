@@ -9,6 +9,9 @@ import (
 	"log"
     "github.com/techobg/prl-forge/internal/pool"
 	"github.com/techobg/prl-forge/internal/stratum/protocol"
+	"github.com/techobg/prl-forge/internal/zkpow"
+    "time"
+	"github.com/techobg/prl-forge/internal/block"
 )
 
 type SubmitParams struct {
@@ -17,7 +20,7 @@ type SubmitParams struct {
 	HS         uint64 `json:"hs"`
 }
 
-func HandleSubmit(session *Session, req *protocol.Request) {
+ func HandleSubmit(session *Session, req *protocol.Request) {
 	log.Println("📤 mining.submit")
 
 	var params SubmitParams
@@ -90,11 +93,9 @@ func HandleSubmit(session *Session, req *protocol.Request) {
 	job, ok := GetJob(params.JobID)
 if ok {
 	job.Proof = append([]byte(nil), decoded...)
-	job.HS = params.HS
-	log.Printf("📦 Cached proof: %d bytes HS=%d", len(job.Proof), job.HS)
-}
+job.HS = params.HS
 
-	// DEBUG ONLY
+// DEBUG ONLY
 	_ = session.Send(protocol.Response{
 		ID:     req.ID,
 		Result: true,
@@ -102,7 +103,53 @@ if ok {
 	})
 
 	log.Println("✅ DEBUG submit accepted")
-	if ok {
-	_ = pool.SubmitBlock(job)
+log.Println("1")
+start := time.Now()
+log.Println("2")
+
+log.Println("3")
+log.Println(">>> ENTER ExtractZKProof")
+zk, err := zkpow.ExtractZKProof(job.HeaderBytes, job.Proof)
+log.Println("4")
+log.Printf("⏱ ExtractZKProof took %s", time.Since(start))
+if err != nil {
+	log.Printf("❌ ZK extract failed: %v", err)
+
+	_ = session.Send(protocol.Response{
+		ID:     req.ID,
+		Result: false,
+		Error:  []any{20, "Invalid ZK proof", nil},
+	})
+	return
 }
+
+job.ZKProof = zk
+cert, err := block.NewZKCertificate(
+	job.HeaderObj,
+	job.ZKProof,
+	uint32(job.CertVersion),
+)
+if err != nil {
+	log.Printf("❌ Certificate build failed: %v", err)
+	return
+}
+
+job.Certificate = cert
+log.Printf("Certificate: %v", job.Certificate)
+log.Println("🔥 BEFORE SubmitBlock")
+
+log.Printf("✅ Cached proof: %d bytes HS=%d", len(job.Proof), job.HS)
+log.Printf("✅ ZK proof extracted")
+}
+
+	
+	if ok {
+	log.Println("➡ Calling SubmitBlock")
+
+	if err := pool.SubmitBlock(job); err != nil {
+		log.Printf("❌ SubmitBlock failed: %v", err)
+	} else {
+		log.Println("✅ SubmitBlock finished")
+	}
+	}
 }

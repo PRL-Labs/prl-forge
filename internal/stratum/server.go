@@ -1,7 +1,7 @@
 package stratum
 
 import (
-	"encoding/json"
+	
 	"log"
 	"net"
 	"sync"
@@ -58,49 +58,25 @@ func (s *Server) Unregister(conn net.Conn) {
 	delete(s.clients, conn)
 }
 
-func (s *Server) broadcastRaw(msg any) {
-	data, err := json.Marshal(msg)
-	if err != nil {
-		log.Println(err)
+func (s *Server) Broadcast(job *Job) {
+	if job == nil {
 		return
 	}
-
-	data = append(data, '\n')
 
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	for conn := range s.clients {
-		if _, err := conn.Write(data); err != nil {
-			log.Printf("client write error: %v", err)
+		session := NewSession(conn)
+
+		if err := NotifyJob(session, job); err != nil {
+			log.Printf("notify error: %v", err)
 			conn.Close()
 			delete(s.clients, conn)
 		}
 	}
 }
 
-func (s *Server) Broadcast(job *Job) {
-	if job == nil {
-		return
-	}
+	
 
-	msg := map[string]any{
-		"id":     nil,
-		"method": "mining.notify",
-		"params": []any{
-			job.ID,
-			job.PrevHash,
-			job.Coinb1,
-			job.Coinb2,
-			job.Merkle,
-			job.Version,
-			job.NBits,
-			job.NTime,
-			job.Clean,
-		},
-	}
 
-	s.broadcastRaw(msg)
-
-	log.Printf("📤 mining.notify sent jobID=%s", job.ID)
-}
