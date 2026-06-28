@@ -1,0 +1,22 @@
+# Archives
+*.zip
+*.rar
+*.7z
+
+# Executables
+*.exe
+
+# Build output
+bin/
+build/
+dist/
+
+# Pearl binaries
+internal/pearl/bin/
+
+# Logs
+*.log
+
+# Windows
+Thumbs.db
+Desktop.ini
