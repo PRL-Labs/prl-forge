@@ -7,6 +7,7 @@ import (
 	"github.com/techobg/prl-forge/internal/pearl"
 	"github.com/techobg/prl-forge/internal/pool"
 	"github.com/techobg/prl-forge/internal/stratum"
+	"github.com/techobg/prl-forge/internal/stats"
 )
 
 type Updater struct {
@@ -76,6 +77,8 @@ if err != nil {
 			log.Println("========================================")
 
 			job := u.engine.BuildJob(template)
+
+			stats.Update(template)
 
 sum := sha256.Sum256(job.HeaderBytes)
 

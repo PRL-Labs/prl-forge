@@ -44,3 +44,30 @@ func (c *Client) GetBlockTemplate() (*BlockTemplate, error) {
 println("RequiredCertVersion:", tpl.RequiredCertVersion)
 	return &tpl, nil
 }
+func (c *Client) GetDifficulty() (float64, error) {
+	var difficulty float64
+
+	if err := c.Call(
+		"getdifficulty",
+		[]any{},
+		&difficulty,
+	); err != nil {
+		return 0, err
+	}
+
+	return difficulty, nil
+}
+
+func (c *Client) GetNetworkHashrate() (float64, error) {
+	var hashrate float64
+
+	if err := c.Call(
+		"getnetworkhashps",
+		[]any{},
+		&hashrate,
+	); err != nil {
+		return 0, err
+	}
+
+	return hashrate, nil
+}

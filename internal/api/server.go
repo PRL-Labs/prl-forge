@@ -17,6 +17,20 @@ type Server struct {
 func New(cfg *config.Config) *Server {
 	mux := http.NewServeMux()
 
+	// CORS Middleware
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		mux.ServeHTTP(w, r)
+	})
+
 	// Health endpoint
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
@@ -37,7 +51,7 @@ func New(cfg *config.Config) *Server {
 	return &Server{
 		httpServer: &http.Server{
 			Addr:    addr,
-			Handler: mux,
+			Handler: handler,
 		},
 	}
 }

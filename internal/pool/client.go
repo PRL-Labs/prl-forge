@@ -7,3 +7,7 @@ var rpcClient *pearl.Client
 func SetClient(c *pearl.Client) {
 	rpcClient = c
 }
+
+func Client() *pearl.Client {
+	return rpcClient
+}

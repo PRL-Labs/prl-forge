@@ -33,3 +33,15 @@ func (m *Manager) Count() int {
 
 	return len(m.workers)
 }
+func (m *Manager) List() []*Worker {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+
+	list := make([]*Worker, 0, len(m.workers))
+
+	for _, worker := range m.workers {
+		list = append(list, worker)
+	}
+
+	return list
+}

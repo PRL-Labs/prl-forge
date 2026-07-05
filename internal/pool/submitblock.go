@@ -1,19 +1,14 @@
 package pool
 
 import (
-	"log"
-	"fmt"
-	"github.com/techobg/prl-forge/internal/block"
 	"encoding/hex"
-	
+	"fmt"
+	"log"
 
+	"github.com/techobg/prl-forge/internal/block"
 )
 
-
 func SubmitBlock(job *Job) error {
-
-
-		
 
 	log.Printf(
 		"🚀 SubmitBlock job=%s height=%d proof=%d hs=%d",
@@ -31,48 +26,37 @@ func SubmitBlock(job *Job) error {
 	}
 
 	log.Printf("ZKProof OK")
-	pb := &block.PearlBlock{
-	Header: job.HeaderObj,
-	Certificate:  job.Certificate,
-	
-}
 
-if job.Template != nil {
-	for _, tx := range job.Template.Transactions {
-	rawTx, err := hex.DecodeString(tx.Data)
+	pb := &block.PearlBlock{
+		Header:      job.HeaderObj,
+		Certificate: job.Certificate,
+	}
+
+	if job.Template != nil {
+		for _, tx := range job.Template.Transactions {
+			rawTx, err := hex.DecodeString(tx.Data)
+			if err != nil {
+				return err
+			}
+
+			pb.Transactions = append(pb.Transactions, rawTx)
+		}
+	}
+
+	raw, err := pb.Serialize()
 	if err != nil {
 		return err
 	}
 
-	pb.Transactions = append(pb.Transactions, rawTx)
-}
-}
+	log.Printf("Serialized block size: %d", len(raw))
 
-raw, err := pb.Serialize()
-if err != nil {
-	return err
-}
-log.Printf("Serialized block size: %d", len(raw))
-if err := rpcClient.SubmitBlock(raw); err != nil {
-	panic(err)
-}
+	if err := rpcClient.SubmitBlock(raw); err != nil {
+		log.Printf("❌ submitblock failed: %v", err)
+		return err
+	}
 
-panic("RPC OK")
-
-if err := rpcClient.SubmitBlock(raw); err != nil {
-	log.Printf("❌ submitblock failed: %v", err)
-	return err
-}
-
-log.Println("✅ submitblock accepted by RPC")
-
-
-
-
-
-log.Printf("Serialized block: %d bytes", len(raw))
-
-	
+	log.Println("✅ submitblock accepted by RPC")
+	log.Printf("Serialized block: %d bytes", len(raw))
 
 	return nil
 }
