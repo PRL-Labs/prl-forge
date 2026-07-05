@@ -4,7 +4,11 @@ import (
 	"encoding/json"
 	"log"
 	"strings"
+     "net"
+	"time"
 
+	"github.com/techobg/prl-forge/internal/pool"
+	workers "github.com/techobg/prl-forge/internal/updater/workers"
 	"github.com/techobg/prl-forge/internal/stratum/protocol"
 )
 
@@ -54,6 +58,24 @@ func HandleAuthorize(session *Session, req *protocol.Request) {
 	session.Wallet = wallet
 	session.Worker = worker
 	session.Difficulty = 1.0
+
+	if p := pool.Current(); p != nil {
+
+	ip := ""
+
+	if addr, ok := session.conn.RemoteAddr().(*net.TCPAddr); ok {
+		ip = addr.IP.String()
+	}
+
+	p.Workers().Add(&workers.Worker{
+		ID:          wallet + "." + worker,
+		Wallet:      wallet,
+		Name:        worker,
+		IP:          ip,
+		ConnectedAt: time.Now(),
+		LastSeen:    time.Now(),
+	})
+}
 
 	log.Println("Miner authorized")
 	log.Printf("Wallet : %s", wallet)

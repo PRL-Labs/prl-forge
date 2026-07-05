@@ -30,6 +30,7 @@ func New() (*App, error) {
 	}
 
 	poolCore := pool.New()
+	pool.SetCurrent(poolCore)
 	handlers.SetPool(poolCore)
 
 	engine := pool.NewEngine()

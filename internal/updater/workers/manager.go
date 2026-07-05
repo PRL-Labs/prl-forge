@@ -45,3 +45,9 @@ func (m *Manager) List() []*Worker {
 
 	return list
 }
+func (m *Manager) Get(id string) *Worker {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+
+	return m.workers[id]
+}

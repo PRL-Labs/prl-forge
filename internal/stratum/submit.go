@@ -12,6 +12,7 @@ import (
 	"github.com/techobg/prl-forge/internal/zkpow"
     "time"
 	"github.com/techobg/prl-forge/internal/block"
+	
 )
 
 type SubmitParams struct {
@@ -94,6 +95,21 @@ type SubmitParams struct {
 if ok {
 	job.Proof = append([]byte(nil), decoded...)
 job.HS = params.HS
+
+if p := pool.Current(); p != nil {
+
+	id := session.Wallet + "." + session.Worker
+
+	w := p.Workers().Get(id)
+
+	if w != nil {
+		w.Shares++
+		w.LastSeen = time.Now()
+		w.Hashrate = float64(params.HS)
+w.LastSeen = time.Now()
+w.Shares++
+	}
+}
 
 // DEBUG ONLY
 	_ = session.Send(protocol.Response{
