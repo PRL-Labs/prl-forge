@@ -11,6 +11,7 @@ import (
 	"github.com/techobg/prl-forge/internal/pool"
 	"github.com/techobg/prl-forge/internal/stratum"
 	"github.com/techobg/prl-forge/internal/updater"
+    "github.com/techobg/prl-forge/internal/updater/blockwatcher"
 )
 
 type App struct {
@@ -53,7 +54,9 @@ pool.SetClient(client)
 		stratumServer,
 		10*time.Second,
 	)
-
+bw := blockwatcher.New(cfg.Pool.Address)
+bw.Start()
+log.Println("🔥 BlockWatcher Started")
 	return &App{
 		cfg:     cfg,
 		api:     api.New(cfg),

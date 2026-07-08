@@ -11,3 +11,6 @@ pearl:
   port: 44144
   user: rpcuser
   password: rpcpassword
+
+pool:
+  address: "prl1pvhtdr2a9r30gwtcpj6u8rc5spgp3rus8zzdnp4mjg6mk3ur29mlqswgvzv"

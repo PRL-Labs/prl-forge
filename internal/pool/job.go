@@ -12,10 +12,13 @@ import (
 
 
 
-type Job struct {
+ type Job struct {
 	ID string
 
 	// Block information
+Wallet string
+	Worker string
+
 	Height int64
 	Header string
 	HeaderBytes  []byte

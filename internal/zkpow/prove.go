@@ -11,10 +11,11 @@ package zkpow
 import "C"
 
 import (
+	"encoding/binary"
 	"fmt"
 	"unsafe"
-	"encoding/binary"
 )
+
 const miningConfigSize = 52
 
 var defaultMiningConfigV1 = [miningConfigSize]byte{
@@ -31,99 +32,67 @@ func headerToC(header []byte) C.IncompleteBlockHeader {
 	cHeader.version = C.uint32_t(binary.LittleEndian.Uint32(header[0:4]))
 
 	for i := 0; i < 32; i++ {
-	cHeader.prev_block[i] = C.uint8_t(header[35-i])
-	cHeader.merkle_root[i] = C.uint8_t(header[67-i])
-}
+		cHeader.prev_block[i] = C.uint8_t(header[35-i])
+		cHeader.merkle_root[i] = C.uint8_t(header[67-i])
+	}
 
 	cHeader.timestamp = C.uint32_t(binary.LittleEndian.Uint32(header[68:72]))
 	cHeader.nbits = C.uint32_t(binary.LittleEndian.Uint32(header[72:76]))
 
 	return cHeader
 }
-func ProvePlain(
 
-    header []byte,
-    proof []byte,
-) error {
+func ProvePlain(header []byte, proof []byte) error {
 	if len(header) == 0 || len(proof) == 0 {
-    return fmt.Errorf("invalid input")
-}
-
-miningConfig := defaultMiningConfigV1[:]
-
-_ = unsafe.Pointer(&header[0])
-_ = unsafe.Pointer(&miningConfig[0])
-_ = unsafe.Pointer(&proof[0])
-
-var out C.struct_CZKProof
-
-var errBuf [C.ERROR_MSG_MAX_SIZE]C.char
-
-buf := C.malloc(C.size_t(C.MAX_ZK_PROOF_SIZE))
-if buf == nil {
-    return fmt.Errorf("failed to allocate proof buffer")
-}
-defer C.free(buf)
-
-out.proof_blob = (*C.uint8_t)(buf)
-cHeader := headerToC(header)
-fmt.Println(">>> ENTER FFI")
-rc := C.prove_plain_proof(
-	&cHeader,
-	(*[C.MINING_CONFIG_SERIALIZED_SIZE]C.uint8_t)(unsafe.Pointer(&miningConfig[0])),
-	(*C.uint8_t)(unsafe.Pointer(&proof[0])),
-	C.uintptr_t(len(proof)),
-	&out,
-	(*C.char)(unsafe.Pointer(&errBuf[0])),
-)
-fmt.Println("<<< EXIT FFI")
-if rc != 0 {
-	return fmt.Errorf(C.GoString((*C.char)(unsafe.Pointer(&errBuf[0]))))
-}
-
-
-
-if rc != 0 {
-	return fmt.Errorf(C.GoString((*C.char)(unsafe.Pointer(&errBuf[0]))))
-}
-
-fmt.Printf("PublicDataLen: %d\n", out.public_data_len)
-publicData := C.GoBytes(
-	unsafe.Pointer(&out.public_data[0]),
-	C.int(out.public_data_len),
-)
-
-proofData := C.GoBytes(
-	unsafe.Pointer(out.proof_blob),
-	C.int(out.proof_blob_len),
-)
-
-fmt.Printf("PublicData bytes: %d\n", len(publicData))
-fmt.Printf("ProofData bytes : %d\n", len(proofData))
-
-LastProof = &ZKProof{
-	PublicData: publicData,
-	ProofData:  proofData,
-}
-
-for i := 0; i < int(out.public_data_len); i += 32 {
-
-
-
-
-	end := i + 32
-	if end > int(out.public_data_len) {
-		end = int(out.public_data_len)
+		return fmt.Errorf("invalid input")
 	}
 
-	fmt.Printf("%02d: %x\n",
-		i/32,
-		out.public_data[i:end],
+	miningConfig := defaultMiningConfigV1[:]
+
+	_ = unsafe.Pointer(&header[0])
+	_ = unsafe.Pointer(&miningConfig[0])
+	_ = unsafe.Pointer(&proof[0])
+
+	var out C.struct_CZKProof
+	var errBuf [C.ERROR_MSG_MAX_SIZE]C.char
+
+	buf := C.malloc(C.size_t(C.MAX_ZK_PROOF_SIZE))
+	if buf == nil {
+		return fmt.Errorf("failed to allocate proof buffer")
+	}
+	defer C.free(buf)
+
+	out.proof_blob = (*C.uint8_t)(buf)
+
+	cHeader := headerToC(header)
+
+	rc := C.prove_plain_proof(
+		&cHeader,
+		(*[C.MINING_CONFIG_SERIALIZED_SIZE]C.uint8_t)(unsafe.Pointer(&miningConfig[0])),
+		(*C.uint8_t)(unsafe.Pointer(&proof[0])),
+		C.uintptr_t(len(proof)),
+		&out,
+		(*C.char)(unsafe.Pointer(&errBuf[0])),
 	)
-}
-	
 
-return nil
+	if rc != 0 {
+		return fmt.Errorf(C.GoString((*C.char)(unsafe.Pointer(&errBuf[0]))))
+	}
 
+	publicData := C.GoBytes(
+		unsafe.Pointer(&out.public_data[0]),
+		C.int(out.public_data_len),
+	)
 
+	proofData := C.GoBytes(
+		unsafe.Pointer(out.proof_blob),
+		C.int(out.proof_blob_len),
+	)
+
+	LastProof = &ZKProof{
+		PublicData: publicData,
+		ProofData:  proofData,
+	}
+
+	return nil
 }

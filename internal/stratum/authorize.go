@@ -3,13 +3,13 @@ package stratum
 import (
 	"encoding/json"
 	"log"
+	"net"
 	"strings"
-     "net"
 	"time"
 
 	"github.com/techobg/prl-forge/internal/pool"
-	workers "github.com/techobg/prl-forge/internal/updater/workers"
 	"github.com/techobg/prl-forge/internal/stratum/protocol"
+	workers "github.com/techobg/prl-forge/internal/updater/workers"
 )
 
 type AuthorizeParams []string
@@ -61,21 +61,21 @@ func HandleAuthorize(session *Session, req *protocol.Request) {
 
 	if p := pool.Current(); p != nil {
 
-	ip := ""
+		ip := ""
 
-	if addr, ok := session.conn.RemoteAddr().(*net.TCPAddr); ok {
-		ip = addr.IP.String()
+		if addr, ok := session.conn.RemoteAddr().(*net.TCPAddr); ok {
+			ip = addr.IP.String()
+		}
+
+		p.Workers().Add(&workers.Worker{
+			ID:          wallet + "." + worker,
+			Wallet:      wallet,
+			Name:        worker,
+			IP:          ip,
+			ConnectedAt: time.Now(),
+			LastSeen:    time.Now(),
+		})
 	}
-
-	p.Workers().Add(&workers.Worker{
-		ID:          wallet + "." + worker,
-		Wallet:      wallet,
-		Name:        worker,
-		IP:          ip,
-		ConnectedAt: time.Now(),
-		LastSeen:    time.Now(),
-	})
-}
 
 	log.Println("Miner authorized")
 	log.Printf("Wallet : %s", wallet)
@@ -92,13 +92,15 @@ func HandleAuthorize(session *Session, req *protocol.Request) {
 		return
 	}
 
-	// Pearl V2 (SRBMiner/Kryptex) НЕ изпраща mining.set_difficulty
-	// Веднага след authorize изпращаме първия job.
-
+	// Изпращаме difficulty преди първия job.
 	if err := SendCurrentJob(session); err != nil {
 		log.Printf("notify: %v", err)
 		return
 	}
 
+	if err := SendCurrentJob(session); err != nil {
+		log.Printf("notify: %v", err)
+		return
+	}
 	log.Println("✅ Authorization completed")
 }

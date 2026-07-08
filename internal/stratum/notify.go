@@ -40,7 +40,5 @@ func SendCurrentJob(session *Session) error {
 		return nil
 	}
 
-	log.Printf("✅ CurrentJob = %s height=%d", job.ID, job.Height)
-
 	return NotifyJob(session, job)
 }

@@ -7,21 +7,21 @@ import (
 	"encoding/json"
 	"io"
 	"log"
-    "github.com/techobg/prl-forge/internal/pool"
+	"time"
+
+	"github.com/techobg/prl-forge/internal/block"
+	"github.com/techobg/prl-forge/internal/pool"
 	"github.com/techobg/prl-forge/internal/stratum/protocol"
 	"github.com/techobg/prl-forge/internal/zkpow"
-    "time"
-	"github.com/techobg/prl-forge/internal/block"
-	
 )
 
 type SubmitParams struct {
-	JobID      string `json:"job_id"`
-	PlainProof string `json:"plain_proof"`
-	HS         uint64 `json:"hs"`
+	JobID      string  `json:"job_id"`
+	PlainProof string  `json:"plain_proof"`
+	HS         float64 `json:"hs"`
 }
 
- func HandleSubmit(session *Session, req *protocol.Request) {
+func HandleSubmit(session *Session, req *protocol.Request) {
 	log.Println("📤 mining.submit")
 
 	var params SubmitParams
@@ -37,10 +37,6 @@ type SubmitParams struct {
 		return
 	}
 
-	log.Printf("JobID      : %s", params.JobID)
-	log.Printf("HS         : %d", params.HS)
-	log.Printf("Proof chars: %d", len(params.PlainProof))
-
 	// Base64 decode
 	proof, err := base64.StdEncoding.DecodeString(params.PlainProof)
 	if err != nil {
@@ -53,8 +49,6 @@ type SubmitParams struct {
 		})
 		return
 	}
-
-	log.Printf("Proof bytes: %d", len(proof))
 
 	// Gzip decompress
 	zr, err := gzip.NewReader(bytes.NewReader(proof))
@@ -82,90 +76,77 @@ type SubmitParams struct {
 		return
 	}
 
-	log.Printf("Decoded proof: %d bytes", len(decoded))
-
-	n := 64
-	if len(decoded) < n {
-		n = len(decoded)
-	}
-
-	log.Printf("Proof prefix: %x", decoded[:n])
-
 	job, ok := GetJob(params.JobID)
-if ok {
-	job.Proof = append([]byte(nil), decoded...)
-job.HS = params.HS
-
-if p := pool.Current(); p != nil {
-
-	id := session.Wallet + "." + session.Worker
-
-	w := p.Workers().Get(id)
-
-	if w != nil {
-		w.Shares++
-		w.LastSeen = time.Now()
-		w.Hashrate = float64(params.HS)
-w.LastSeen = time.Now()
-w.Shares++
+	if !ok {
+		return
 	}
-}
 
-// DEBUG ONLY
+	job.Proof = append([]byte(nil), decoded...)
+	job.HS = uint64(params.HS)
+	job.Wallet = session.Wallet
+	job.Worker = session.Worker
+
+	if p := pool.Current(); p != nil {
+		id := session.Wallet + "." + session.Worker
+
+		if w := p.Workers().Get(id); w != nil {
+			w.Shares++
+			w.LastSeen = time.Now()
+			w.Hashrate = params.HS
+		}
+
+		// Track current mining round
+		p.Round().AddShare(session.Difficulty)
+
+		log.Printf(
+			"ADD SHARE -> shares=%d work=%.2f diff=%.2f",
+			p.Round().Shares(),
+			p.Round().Work(),
+			session.Difficulty,
+		)
+
+		// Persist current round
+		if err := pool.SaveRoundStats(p.RoundHeight(), p.Round()); err != nil {
+			log.Printf("failed to save round: %v", err)
+		}
+	}
+
+	// Accept share immediately
 	_ = session.Send(protocol.Response{
 		ID:     req.ID,
 		Result: true,
 		Error:  nil,
 	})
 
-	log.Println("✅ DEBUG submit accepted")
-log.Println("1")
-start := time.Now()
-log.Println("2")
+	zk, err := zkpow.ExtractZKProof(job.HeaderBytes, job.Proof)
+	if err != nil {
+		log.Printf("❌ ZK extract failed: %v", err)
 
-log.Println("3")
-log.Println(">>> ENTER ExtractZKProof")
-zk, err := zkpow.ExtractZKProof(job.HeaderBytes, job.Proof)
-log.Println("4")
-log.Printf("⏱ ExtractZKProof took %s", time.Since(start))
-if err != nil {
-	log.Printf("❌ ZK extract failed: %v", err)
+		_ = session.Send(protocol.Response{
+			ID:     req.ID,
+			Result: false,
+			Error:  []any{20, "Invalid ZK proof", nil},
+		})
+		return
+	}
 
-	_ = session.Send(protocol.Response{
-		ID:     req.ID,
-		Result: false,
-		Error:  []any{20, "Invalid ZK proof", nil},
-	})
-	return
-}
+	job.ZKProof = zk
 
-job.ZKProof = zk
-cert, err := block.NewZKCertificate(
-	job.HeaderObj,
-	job.ZKProof,
-	uint32(job.CertVersion),
-)
-if err != nil {
-	log.Printf("❌ Certificate build failed: %v", err)
-	return
-}
+	cert, err := block.NewZKCertificate(
+		job.HeaderObj,
+		job.ZKProof,
+		uint32(job.CertVersion),
+	)
+	if err != nil {
+		log.Printf("❌ Certificate build failed: %v", err)
+		return
+	}
 
-job.Certificate = cert
-log.Printf("Certificate: %v", job.Certificate)
-log.Println("🔥 BEFORE SubmitBlock")
-
-log.Printf("✅ Cached proof: %d bytes HS=%d", len(job.Proof), job.HS)
-log.Printf("✅ ZK proof extracted")
-}
-
-	
-	if ok {
-	log.Println("➡ Calling SubmitBlock")
+	job.Certificate = cert
 
 	if err := pool.SubmitBlock(job); err != nil {
 		log.Printf("❌ SubmitBlock failed: %v", err)
 	} else {
 		log.Println("✅ SubmitBlock finished")
-	}
 	}
 }

@@ -59,11 +59,17 @@ pub fn prove_block(
         pow_bits: default_pow_bits.map(|b| b as usize),
         rate_bits: default_rate_bits.map(|b| b as usize),
     };
+println!("RUST 1 - before compile_circuits");
+
     PearlRecursion::compile_circuits(circuit_params, cache, true)?;
+
+    println!("RUST 2 - after compile_circuits");
 
     let hash_public_data = public_params.public_data_commitment(&circuit_params);
 
     let proof = PearlRecursion::prove(circuit_params, cache, (trace_rows, stark_pis, hash_public_data))?;
+   
+   println!("RUST 4 - after prove");
     Ok(proof)
 }
 

@@ -1,10 +1,9 @@
 package block
 
 import (
-	
 	"crypto/sha256"
 	"encoding/hex"
-	"fmt"
+
 	"github.com/techobg/prl-forge/internal/tx"
 )
 
@@ -20,20 +19,20 @@ func CoinbaseHash(cb Coinbase) ([]byte, error) {
 
 	height := EncodeScriptNum(int64(cb.Height))
 
-flags, err := hex.DecodeString(cb.Flags)
-if err != nil {
-	return nil, err
-}
+	flags, err := hex.DecodeString(cb.Flags)
+	if err != nil {
+		return nil, err
+	}
 
-sig := make([]byte, 0)
+	sig := make([]byte, 0)
 
-sig = append(sig, byte(len(height)))
-sig = append(sig, height...)
+	sig = append(sig, byte(len(height)))
+	sig = append(sig, height...)
 
-sig = append(sig, byte(len(flags)))
-sig = append(sig, flags...)
+	sig = append(sig, byte(len(flags)))
+	sig = append(sig, flags...)
 
-script := tx.NewScript(sig)
+	script := tx.NewScript(sig)
 
 	// -------- Coinbase input --------
 
@@ -41,10 +40,10 @@ script := tx.NewScript(sig)
 
 	// -------- Output --------
 
-out := tx.NewTxOut(
-	int64(cb.Value),
-	tx.NewScript([]byte{0x6a}), // OP_RETURN
-)
+	out := tx.NewTxOut(
+		int64(cb.Value),
+		tx.NewScript([]byte{0x6a}), // OP_RETURN
+	)
 	// -------- Transaction --------
 
 	txn := tx.NewTransaction()
@@ -59,14 +58,8 @@ out := tx.NewTxOut(
 		return nil, err
 	}
 
-	fmt.Println("========== COINBASE ==========")
-	fmt.Printf("Raw TX : %x\n", raw)
-
 	h1 := sha256.Sum256(raw)
 	h2 := sha256.Sum256(h1[:])
-
-	fmt.Printf("TXID   : %x\n", h2[:])
-	fmt.Println("==============================")
 
 	return h2[:], nil
 }

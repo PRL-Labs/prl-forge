@@ -45,6 +45,10 @@ func New(cfg *config.Config) *Server {
 
 	// Dashboard endpoint
 	mux.HandleFunc("/api/v1/dashboard", handlers.Dashboard)
+	mux.HandleFunc("/api/v1/workers", handlers.Workers)
+	mux.HandleFunc("/api/v1/miners", handlers.Miners)
+	mux.HandleFunc("/api/v1/miner", handlers.Miner)
+	mux.HandleFunc("/api/v1/blocks", handlers.Blocks)
 
 	addr := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)
 

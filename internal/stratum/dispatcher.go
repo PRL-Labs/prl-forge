@@ -18,7 +18,7 @@ func Dispatch(session *Session, req *protocol.Request) {
 		HandleAuthorize(session, req)
 
 	case "mining.submit":
-    go HandleSubmit(session, req)
+		go HandleSubmit(session, req)
 
 	default:
 		log.Printf("⚠️ Unknown method: %s", req.Method)

@@ -21,8 +21,13 @@ type Config struct {
 		User     string `mapstructure:"user"`
 		Password string `mapstructure:"password"`
 	} `mapstructure:"pearl"`
-}
 
+
+    Pool struct {
+	Address string `mapstructure:"address"`
+    } `mapstructure:"pool"`
+
+	}
 func Load() (*Config, error) {
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")

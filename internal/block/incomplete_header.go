@@ -34,22 +34,21 @@ func (h *IncompleteHeader) Serialize() ([]byte, error) {
 	if err := binary.Write(&buf, binary.LittleEndian, h.Version); err != nil {
 		return nil, err
 	}
-fmt.Printf("PrevBlock : %x\n", h.PrevBlock)
-fmt.Printf("MerkleRoot: %x\n", h.MerkleRoot)
+
 	prev := make([]byte, 32)
-copy(prev, h.PrevBlock)
+	copy(prev, h.PrevBlock)
 
-merkle := make([]byte, 32)
-copy(merkle, h.MerkleRoot)
+	merkle := make([]byte, 32)
+	copy(merkle, h.MerkleRoot)
 
-// reverse byte order
-for i := 0; i < 16; i++ {
-	prev[i], prev[31-i] = prev[31-i], prev[i]
-	merkle[i], merkle[31-i] = merkle[31-i], merkle[i]
-}
+	// reverse byte order
+	for i := 0; i < 16; i++ {
+		prev[i], prev[31-i] = prev[31-i], prev[i]
+		merkle[i], merkle[31-i] = merkle[31-i], merkle[i]
+	}
 
-buf.Write(prev)
-buf.Write(merkle)
+	buf.Write(prev)
+	buf.Write(merkle)
 
 	if err := binary.Write(&buf, binary.LittleEndian, h.Timestamp); err != nil {
 		return nil, err

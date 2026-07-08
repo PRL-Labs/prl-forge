@@ -17,25 +17,6 @@ func BuildMerkleRootFromTemplate(tpl *pearl.BlockTemplate) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-fmt.Println("============== TX DEBUG ==============")
-
-for i, tx := range tpl.Transactions {
-	if i >= 3 {
-		break
-	}
-
-	fmt.Printf("TX[%d]\n", i)
-	fmt.Printf("  TXID : %s\n", tx.TxID)
-	fmt.Printf("  HASH : %s\n", tx.Hash)
-}
-
-fmt.Println("======================================")
-	fmt.Println("============== MERKLE DEBUG ==============")
-	fmt.Printf("CoinbaseHash : %x\n", cbHash)
-	fmt.Printf("Height       : %d\n", tpl.Height)
-	fmt.Printf("CoinbaseValue: %d\n", tpl.CoinbaseValue)
-	fmt.Printf("Flags        : %s\n", tpl.CoinbaseAux.Flags)
-	fmt.Printf("TX count     : %d\n", len(tpl.Transactions))
 
 	hashes := make([][]byte, 0, len(tpl.Transactions)+1)
 	hashes = append(hashes, cbHash)
@@ -48,9 +29,6 @@ fmt.Println("======================================")
 
 		hashes = append(hashes, h)
 	}
-
-	fmt.Printf("Merkle leaves: %d\n", len(hashes))
-	fmt.Println("=========================================")
 
 	return BuildMerkleRoot(hashes), nil
 }

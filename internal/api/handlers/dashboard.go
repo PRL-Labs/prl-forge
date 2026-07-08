@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/techobg/prl-forge/internal/pool"
@@ -13,6 +14,7 @@ type DashboardResponse struct {
 	Pool    PoolInfo        `json:"pool"`
 	Workers WorkersInfo     `json:"workers"`
 	Network NetworkInfo     `json:"network"`
+	Round   RoundInfo       `json:"round"`
 	Reward  services.Reward `json:"reward"`
 }
 
@@ -31,6 +33,12 @@ type NetworkInfo struct {
 	Difficulty      int64   `json:"difficulty"`
 	NetworkHashrate float64 `json:"networkHashrate"`
 	PoolHashrate    int64   `json:"poolHashrate"`
+}
+
+type RoundInfo struct {
+	Shares uint64  `json:"shares"`
+	Work   float64 `json:"work"`
+	Luck   float64 `json:"luck"`
 }
 
 func Dashboard(w http.ResponseWriter, r *http.Request) {
@@ -60,6 +68,20 @@ func Dashboard(w http.ResponseWriter, r *http.Request) {
 		reward = services.CurrentReward(tpl, 1.5)
 	}
 
+	round := RoundInfo{}
+
+	if Pool != nil {
+		round.Shares = Pool.Round().Shares()
+		round.Work = Pool.Round().Work()
+		round.Luck = Pool.Round().Luck(float64(difficulty))
+	}
+	log.Printf(
+		"ROUND TEST -> shares=%d work=%.2f diff=%d luck=%.8f",
+		round.Shares,
+		round.Work,
+		difficulty,
+		round.Luck,
+	)
 	resp := DashboardResponse{
 		Pool: PoolInfo{
 			Name:    "PRL Forge",
@@ -87,7 +109,7 @@ func Dashboard(w http.ResponseWriter, r *http.Request) {
 				return Pool.TotalHashrate()
 			}(),
 		},
-
+		Round:  round,
 		Reward: reward,
 	}
 
