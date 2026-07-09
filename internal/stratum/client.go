@@ -11,6 +11,6 @@ func (s *Server) handleConnection(conn net.Conn) {
 
 	session := NewSession(conn)
 	session.Run()
-
+	s.Unregister(conn)
 	log.Println("========== CONNECTION CLOSED ==========")
 }

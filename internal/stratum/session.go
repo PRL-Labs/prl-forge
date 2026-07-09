@@ -7,6 +7,7 @@ import (
 	"log"
 	"net"
 
+	"github.com/techobg/prl-forge/internal/pool"
 	"github.com/techobg/prl-forge/internal/stratum/protocol"
 )
 
@@ -54,7 +55,15 @@ func (s *Session) Notify(method string, params any) error {
 
 func (s *Session) Run() {
 	defer func() {
+
+		if p := pool.Current(); p != nil && s.Wallet != "" {
+			p.Workers().Remove(s.Wallet + "." + s.Worker)
+
+			log.Printf("🗑 Worker removed: %s.%s", s.Wallet, s.Worker)
+		}
+
 		log.Println("========== CONNECTION CLOSED ==========")
+
 		_ = s.conn.Close()
 	}()
 

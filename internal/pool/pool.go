@@ -6,11 +6,11 @@ import (
 )
 
 type Pool struct {
-	workers     *workers.Manager
-	blocks      *blocks.Manager
-	round       *RoundStats
-	engine      *Engine
-	history     *HistoryManager
+	workers *workers.Manager
+	blocks  *blocks.Manager
+	round   *RoundStats
+	engine  *Engine
+
 	roundHeight int64
 }
 
@@ -20,12 +20,7 @@ func New() *Pool {
 		blocks:  blocks.NewManager(),
 		round:   NewRoundStats(),
 		engine:  NewEngine(),
-		history: NewHistoryManager(),
 	}
-}
-
-func (p *Pool) History() *HistoryManager {
-	return p.history
 }
 
 func (p *Pool) Workers() *workers.Manager {
