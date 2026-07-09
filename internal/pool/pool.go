@@ -1,16 +1,17 @@
 package pool
 
 import (
+	"github.com/techobg/prl-forge/internal/history"
 	blocks "github.com/techobg/prl-forge/internal/updater/blocks"
 	workers "github.com/techobg/prl-forge/internal/updater/workers"
 )
 
 type Pool struct {
-	workers *workers.Manager
-	blocks  *blocks.Manager
-	round   *RoundStats
-	engine  *Engine
-
+	workers     *workers.Manager
+	blocks      *blocks.Manager
+	round       *RoundStats
+	engine      *Engine
+	history     *history.PoolManager
 	roundHeight int64
 }
 
@@ -20,11 +21,16 @@ func New() *Pool {
 		blocks:  blocks.NewManager(),
 		round:   NewRoundStats(),
 		engine:  NewEngine(),
+		history: history.NewPool(),
 	}
 }
 
 func (p *Pool) Workers() *workers.Manager {
 	return p.workers
+}
+
+func (p *Pool) History() *history.PoolManager {
+	return p.history
 }
 
 func (p *Pool) OnlineWorkers() int {

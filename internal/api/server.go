@@ -49,6 +49,9 @@ func New(cfg *config.Config) *Server {
 	mux.HandleFunc("/api/v1/miners", handlers.Miners)
 	mux.HandleFunc("/api/v1/miner", handlers.Miner)
 	mux.HandleFunc("/api/v1/blocks", handlers.Blocks)
+	mux.HandleFunc("/api/v1/history/pool", handlers.PoolHistory)
+	mux.HandleFunc("/api/v1/history/worker", handlers.WorkerHistory)
+	mux.HandleFunc("/api/v1/history/miner", handlers.MinerHistory)
 
 	addr := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)
 

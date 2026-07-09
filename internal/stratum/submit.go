@@ -93,6 +93,20 @@ func HandleSubmit(session *Session, req *protocol.Request) {
 			w.Shares++
 			w.LastSeen = time.Now()
 			w.Hashrate = params.HS
+			p.History().Add(p.TotalHashrate())
+
+			pool.WorkerHistory().Add(
+				session.Wallet,
+				session.Worker,
+				int64(params.HS),
+			)
+
+			pool.MinerHistory().Add(
+				session.Wallet,
+				int64(params.HS),
+			)
+
+			log.Printf("WorkerHistory: %s.%s = %.0f", session.Wallet, session.Worker, params.HS)
 		}
 
 		// Track current mining round

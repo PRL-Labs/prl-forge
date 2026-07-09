@@ -71,6 +71,9 @@ func (u *Updater) Start() {
 
 			if p := pool.Current(); p != nil {
 				p.SyncRound(template.Height)
+
+				log.Printf("📈 Pool hashrate: %d", p.TotalHashrate())
+
 			}
 
 			if u.stratum != nil {
