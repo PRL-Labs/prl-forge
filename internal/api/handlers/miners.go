@@ -50,10 +50,10 @@ func Miners(w http.ResponseWriter, r *http.Request) {
 			stats[worker.Wallet] = s
 		}
 
-		s.hashrate += worker.Hashrate
 		s.workers++
 
 		if time.Since(worker.LastSeen) < 2*time.Minute {
+			s.hashrate += worker.Hashrate
 			s.online = true
 		}
 	}
@@ -104,9 +104,8 @@ func Miner(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		hashrate += worker.Hashrate
-
 		if time.Since(worker.LastSeen) < 2*time.Minute {
+			hashrate += worker.Hashrate
 			online++
 		}
 
