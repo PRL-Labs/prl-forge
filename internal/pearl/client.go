@@ -75,8 +75,8 @@ func (c *Client) Call(method string, params any, result any) error {
 	if err != nil {
 		return err
 	}
-
-
+	fmt.Println("RPC STATUS:", resp.Status)
+	fmt.Println("RPC BODY:", string(body))
 
 	var rpcResp rpcResponse
 
