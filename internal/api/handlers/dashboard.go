@@ -50,11 +50,20 @@ func Dashboard(w http.ResponseWriter, r *http.Request) {
 	}
 
 	difficulty := int64(0)
+	rawDifficulty := float64(0)
+
 	if pool.Client() != nil {
 		if diff, err := pool.Client().GetDifficulty(); err == nil {
+			rawDifficulty = diff
 			difficulty = int64(diff)
 		}
 	}
+
+	log.Printf(
+		"RPC DEBUG -> rawDifficulty=%.12f difficulty=%d",
+		rawDifficulty,
+		difficulty,
+	)
 
 	networkHashrate := float64(0)
 	if pool.Client() != nil {
@@ -75,6 +84,7 @@ func Dashboard(w http.ResponseWriter, r *http.Request) {
 		round.Work = Pool.Round().Work()
 		round.Luck = Pool.Round().Luck(float64(difficulty))
 	}
+
 	log.Printf(
 		"DEBUG LUCK -> shares=%d work=%.2f difficulty=%f formula=%f",
 		round.Shares,
@@ -90,13 +100,13 @@ func Dashboard(w http.ResponseWriter, r *http.Request) {
 		difficulty,
 		round.Luck,
 	)
+
 	resp := DashboardResponse{
 		Pool: PoolInfo{
 			Name:    "PRL Forge",
 			Version: "0.1.0",
 			Status:  "online",
 		},
-
 		Workers: WorkersInfo{
 			Online: func() int {
 				if Pool == nil {
@@ -105,7 +115,6 @@ func Dashboard(w http.ResponseWriter, r *http.Request) {
 				return Pool.OnlineWorkers()
 			}(),
 		},
-
 		Network: NetworkInfo{
 			Height:          height,
 			Difficulty:      difficulty,
