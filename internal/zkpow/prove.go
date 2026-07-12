@@ -94,5 +94,12 @@ func ProvePlain(header []byte, proof []byte) error {
 		ProofData:  proofData,
 	}
 
+	hashJackpot := C.GoBytes(
+		unsafe.Pointer(&out.hash_jackpot[0]),
+		32,
+	)
+
+	fmt.Printf("HASH JACKPOT = %x\n", hashJackpot)
+
 	return nil
 }

@@ -14,6 +14,8 @@ pub struct ProveResult {
     /// [`PublicProofParams::WIRE_SIZE`] bytes for non-MoE; longer for MoE proof.
     pub public_data: Vec<u8>,
     pub proof_data: Vec<u8>,
+
+    pub hash_jackpot: [u8; 32],
 }
 
 /// Parse a proof (plain or MoE), generate a ZK proof, and return the serialized result.
@@ -35,7 +37,11 @@ pub fn zk_prove_plain_proof(
 
     let (public_data, proof_data) = proof.serialize(&public)?;
 
-    Ok(ProveResult { public_data, proof_data })
+   Ok(ProveResult {
+    public_data,
+    proof_data,
+    hash_jackpot: public.hash_jackpot,
+})
 }
 
 pub fn prove_block(

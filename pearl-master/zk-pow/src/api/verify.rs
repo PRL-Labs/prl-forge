@@ -127,6 +127,15 @@ pub fn verify_plain_proof(
 
     // Compute the actual jackpot hash and check the difficulty condition
     public_params.hash_jackpot = compute_jackpot_hash(&jackpot, compiled.a_noise_seed());
+
+   panic!("JACKPOT HASH = {:x}", U256::from_little_endian(&public_params.hash_jackpot));
+
+let bound = extract_difficulty_bound(
+    nbits_override.unwrap_or(block_header.nbits),
+    &public_params.mining_config,
+);
+
+println!("BOUND = {:x}", bound);
     check_jackpot_against_nbits(&public_params, nbits_override)?;
 
     Ok(())

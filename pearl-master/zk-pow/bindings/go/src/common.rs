@@ -90,6 +90,9 @@ pub struct CZKProof {
     pub public_data: [u8; PUBLICDATA_MAX_SIZE],
     pub proof_blob_len: usize,
     pub proof_blob: *mut u8,
+
+    // NEW
+    pub hash_jackpot: [u8; 32],
 }
 
 /// Writes an error message into a caller-allocated buffer of ERROR_MSG_MAX_SIZE bytes.

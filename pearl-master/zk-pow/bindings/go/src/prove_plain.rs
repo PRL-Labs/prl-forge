@@ -72,6 +72,8 @@ proof_blob[..result.proof_data.len()]
 
 out.proof_blob_len = result.proof_data.len();
 
+out.hash_jackpot = result.hash_jackpot;
+
 set_error_msg(_error_msg_out, "OK");
 
 0
