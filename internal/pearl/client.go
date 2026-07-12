@@ -68,19 +68,23 @@ func (c *Client) Call(method string, params any, result any) error {
 	if err != nil {
 		return err
 	}
-
+	fmt.Println("HTTP STATUS:", resp.Status)
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}
+
+	fmt.Println("HTTP BODY:")
+	fmt.Println(string(body))
 	fmt.Println("RPC STATUS:", resp.Status)
 	fmt.Println("RPC BODY:", string(body))
 
 	var rpcResp rpcResponse
 
 	if err := json.Unmarshal(body, &rpcResp); err != nil {
+		fmt.Println("UNMARSHAL ERROR:", err)
 		return err
 	}
 
