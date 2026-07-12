@@ -76,6 +76,14 @@ func Dashboard(w http.ResponseWriter, r *http.Request) {
 		round.Luck = Pool.Round().Luck(float64(difficulty))
 	}
 	log.Printf(
+		"DEBUG LUCK -> shares=%d work=%.2f difficulty=%f formula=%f",
+		round.Shares,
+		round.Work,
+		float64(difficulty),
+		round.Work/float64(difficulty),
+	)
+
+	log.Printf(
 		"ROUND TEST -> shares=%d work=%.2f diff=%d luck=%.8f",
 		round.Shares,
 		round.Work,

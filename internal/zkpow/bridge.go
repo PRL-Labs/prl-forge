@@ -1,8 +1,8 @@
 package zkpow
 
 /*
-#cgo CFLAGS: -ID:/Projects/prl-forge/pearl-master/zk-pow/bindings/go
-#cgo LDFLAGS: -LD:/Projects/prl-forge/pearl-master/zk-pow/bindings/go/target/x86_64-pc-windows-gnu/release -l:libzk_pow_ffi.dll.a
+#cgo CFLAGS: -I/opt/prl-forge/pearl-master/zk-pow/bindings/go
+#cgo LDFLAGS: -L/opt/prl-forge/pearl-master/zk-pow/bindings/go/target/release -lzk_pow_ffi
 
 #include "zk_pow_ffi.h"
 */
