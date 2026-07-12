@@ -1,6 +1,7 @@
 use anyhow::{Result, bail, ensure};
 use plonky2_field::extension::FieldExtension;
 use plonky2_field::goldilocks_field::GoldilocksField;
+use crate::api::sanity_checks::extract_difficulty_bound;
 
 use crate::{
     api::{
