@@ -43,6 +43,7 @@ func headerToC(header []byte) C.IncompleteBlockHeader {
 }
 
 func ProvePlain(header []byte, proof []byte) error {
+	fmt.Println(">>> ENTER ProvePlain")
 	if len(header) == 0 || len(proof) == 0 {
 		return fmt.Errorf("invalid input")
 	}
