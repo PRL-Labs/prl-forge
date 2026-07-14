@@ -1,0 +1,20 @@
+[0;1;32m●[0m pearl.service - Pearl Node
+     Loaded: loaded (]8;;file://vmi3431326/etc/systemd/system/pearl.service/etc/systemd/system/pearl.service]8;;; [0;1;32menabled[0m; preset: [0;1;32menabled[0m)
+     Active: [0;1;32mactive (running)[0m since Sat 2026-07-11 13:02:33 CEST; 7s ago
+   Main PID: 208636 (pearld)
+      Tasks: 13 (limit: 14306)
+     Memory: 303.3M (peak: 320.6M)
+        CPU: 3.408s
+     CGroup: /system.slice/pearl.service
+             └─[0;38;5;245m208636 /opt/prl-forge/pearl-master/node/bin/pearld[0m
+
+Jul 11 13:02:37 vmi3431326 pearld[208636]: 2026-07-11 13:02:37.053 [INF] SYNC: New valid peer 37.27.193.93:44108 (outbound) (/pearlwire:0.5.0/pearld:1.1.0/)
+Jul 11 13:02:37 vmi3431326 pearld[208636]: 2026-07-11 13:02:37.125 [INF] CMGR: Seed peers from DNS seed seeder1.pearlresearch.ai: [34.179.142.108 34.30.42.142 35.236.166.224 34.24.229.174 35.234.26.40 152.53.240.222 104.199.242.60 91.107.219.51 77.90.43.177 35.198.175.14 34.132.243.38 34.80.253.170 51.210.220.115 211.251.197.5 34.168.213.157 34.61.142.157 34.71.251.57 35.243.206.3 136.116.194.66 34.159.59.116 35.221.189.208 24.144.74.15 103.199.106.122 20.122.140.22 34.179.232.126]
+Jul 11 13:02:37 vmi3431326 pearld[208636]: 2026-07-11 13:02:37.125 [INF] CMGR: 25 addresses found from DNS seed seeder1.pearlresearch.ai
+Jul 11 13:02:37 vmi3431326 pearld[208636]: 2026-07-11 13:02:37.167 [INF] CMGR: Seed peers from DNS seed seeder3.pearlresearch.ai: [35.236.139.206 136.119.103.20 34.141.46.163 104.155.199.90 34.178.22.45 35.238.0.96 35.246.143.196 35.252.128.240 35.252.216.74 147.90.12.250 34.23.200.196 51.210.220.115 46.4.173.103 35.234.118.250 8.231.166.106 34.179.228.16 54.38.176.95 49.13.136.227 34.44.244.224 136.116.194.66 153.75.90.85 35.243.206.3 8.231.205.47 136.116.101.100 148.66.48.202]
+Jul 11 13:02:37 vmi3431326 pearld[208636]: 2026-07-11 13:02:37.167 [INF] CMGR: 25 addresses found from DNS seed seeder3.pearlresearch.ai
+Jul 11 13:02:37 vmi3431326 pearld[208636]: 2026-07-11 13:02:37.214 [INF] SYNC: New valid peer 20.122.140.22:44108 (outbound) (/pearlwire:0.5.0/pearld:1.0.3/)
+Jul 11 13:02:37 vmi3431326 pearld[208636]: 2026-07-11 13:02:37.241 [INF] SYNC: New valid peer 34.74.42.241:44108 (outbound) (/pearlwire:0.5.0/pearld:1.1.1/)
+Jul 11 13:02:37 vmi3431326 pearld[208636]: 2026-07-11 13:02:37.247 [INF] SYNC: New valid peer 34.73.24.216:44108 (outbound) (/pearlwire:0.5.0/pearld:1.1.1/)
+Jul 11 13:02:38 vmi3431326 pearld[208636]: 2026-07-11 13:02:38.881 [INF] SYNC: New valid peer 20.122.140.22:39630 (inbound) (/pearlwire:0.5.0/pearld:1.0.3/)
+Jul 11 13:02:39 vmi3431326 pearld[208636]: 2026-07-11 13:02:39.499 [INF] SYNC: New valid peer 20.122.140.22:39646 (inbound) (/pearlwire:0.5.0/pearld:1.0.3/)

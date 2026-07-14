@@ -1,36 +1,43 @@
-package pool
+
+	package pool
 
 import "log"
 
 var roundLoaded bool
 
-func (p *Pool) SyncRound(height int64) {
+func (p *Pool) RestoreRound(height int64) {
 
-	if !roundLoaded {
-
-		r, savedHeight, err := LoadRoundStats()
-		if err == nil {
-
-			if savedHeight == height {
-				p.round = r
-				p.roundHeight = height
-				log.Printf("✅ Restored round: height=%d shares=%d", height, r.Shares())
-			}
-
-		}
-
-		roundLoaded = true
+	if roundLoaded {
+		return
 	}
 
-	if p.roundHeight != height {
+	r, savedHeight, err := LoadRoundStats()
+if err == nil {
+	p.round = r
+	p.roundHeight = savedHeight
+  
+  if minerRounds, err := LoadMinerRounds(); err == nil {
+	p.minerRounds = minerRounds
+}
 
-		p.round.Reset()
-		p.roundHeight = height
+	log.Printf(
+		"✅ Restored round: height=%d shares=%d",
+		savedHeight,
+		r.Shares(),
+	)
+}
 
-		if err := SaveRoundStats(height, p.round); err != nil {
-			log.Printf("failed to save round: %v", err)
-		}
+	roundLoaded = true
+}
 
-		log.Printf("🔄 New mining round: height=%d", height)
+func (p *Pool) StartNewRound(height int64) {
+
+	p.round.Reset()
+	p.roundHeight = height
+
+	if err := SaveRoundStats(height, p.round); err != nil {
+		log.Printf("failed to save round: %v", err)
 	}
+
+	log.Printf("🏁 New pool round: height=%d", height)
 }

@@ -6,7 +6,7 @@ import (
 	"io"
 	"log"
 	"net"
-
+        "time"
 	"github.com/techobg/prl-forge/internal/pool"
 	"github.com/techobg/prl-forge/internal/stratum/protocol"
 )
@@ -19,8 +19,10 @@ type Session struct {
 
 	Wallet string
 	Worker string
-
+       
 	Difficulty float64
+LastShare time.Time
+
 }
 
 func NewSession(conn net.Conn) *Session {
@@ -93,6 +95,6 @@ func (s *Session) Run() {
 	if err := scanner.Err(); err != nil && err != io.EOF {
 		log.Printf("Scanner error: %v", err)
 	}
-
+       log.Printf("Scanner finished, err=%v", scanner.Err())
 	log.Println("Session finished")
 }

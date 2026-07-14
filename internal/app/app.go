@@ -45,8 +45,15 @@ func New() (*App, error) {
     User:     cfg.Pearl.User,
     Password: cfg.Pearl.Password,
 })
-
 pool.SetClient(client)
+go func() {
+	ticker := time.NewTicker(time.Minute)
+	defer ticker.Stop()
+
+	for range ticker.C {
+		pool.ActivityHistory().Flush()
+	}
+}()
 
 	up := updater.New(
 		client,

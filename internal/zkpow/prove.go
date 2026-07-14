@@ -92,18 +92,20 @@ func ProvePlain(header []byte, proof []byte) error {
 		unsafe.Pointer(out.proof_blob),
 		C.int(out.proof_blob_len),
 	)
+         hashJackpot := C.GoBytes(
+                unsafe.Pointer(&out.hash_jackpot[0]),
+                32,
+        )
+
+        fmt.Printf("HASH JACKPOT = %x\n", hashJackpot)
 
 	LastProof = &ZKProof{
 		PublicData: publicData,
 		ProofData:  proofData,
+               HashJackpot: hashJackpot,
 	}
 
-	hashJackpot := C.GoBytes(
-		unsafe.Pointer(&out.hash_jackpot[0]),
-		32,
-	)
 
-	fmt.Printf("HASH JACKPOT = %x\n", hashJackpot)
 
 	return nil
 }

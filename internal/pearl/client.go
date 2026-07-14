@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+        "log"
 )
 
 type Client struct {
@@ -76,7 +77,7 @@ func (c *Client) Call(method string, params any, result any) error {
 		return err
 	}
 
-
+   log.Printf("RPC BODY:\n%s", string(body))
 
 	var rpcResp rpcResponse
 

@@ -70,7 +70,7 @@ func (s *Server) Broadcast(job *Job) {
 		session := NewSession(conn)
 
 		if err := NotifyJob(session, job); err != nil {
-			log.Printf("notify error: %v", err)
+               log.Printf("NotifyJob ERROR for %s: %v", conn.RemoteAddr(), err)
 			conn.Close()
 			delete(s.clients, conn)
 		}

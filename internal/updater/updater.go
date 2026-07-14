@@ -68,13 +68,23 @@ func (u *Updater) Start() {
 			job := u.engine.BuildJob(template)
 
 			stats.Update(template)
+      
+if p := pool.Current(); p != nil {
 
-			if p := pool.Current(); p != nil {
-				p.SyncRound(template.Height)
+    // Поддържай текущата височина на рунда
+    p.SetRoundHeight(template.Height)
+    
+    log.Printf(
+    "ROUND HEIGHT SET -> template=%d current=%d",
+    template.Height,
+    p.RoundHeight(),
+)
 
-				log.Printf("📈 Pool hashrate: %d", p.TotalHashrate())
+    // Restore само при стартиране
+    p.RestoreRound(template.Height)
 
-			}
+    log.Printf("📈 Pool hashrate: %d", p.TotalHashrate())
+}
 
 			if u.stratum != nil {
 				u.stratum.Broadcast(job)

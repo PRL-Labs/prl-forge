@@ -48,5 +48,8 @@ func (m *PoolManager) Get() []PoolPoint {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 
-	return append([]PoolPoint(nil), m.points...)
+	out := make([]PoolPoint, len(m.points))
+	copy(out, m.points)
+
+	return out
 }

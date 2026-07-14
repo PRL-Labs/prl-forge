@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+
 	"github.com/techobg/prl-forge/internal/zkpow"
 )
 
@@ -33,10 +34,10 @@ func (z *ZKCertificate) Serialize() ([]byte, error) {
 	buf.Write(z.HeaderHash)
 
 	switch z.CertVersion {
-	case 1: // ZK_DENSE
+	case 1:
 		buf.Write(z.PublicData)
 
-	case 2: // ZK_MOE
+	case 2:
 		if err := binary.Write(&buf, binary.LittleEndian, uint32(len(z.PublicData))); err != nil {
 			return nil, err
 		}
@@ -61,19 +62,21 @@ func NewZKCertificate(
 	certVersion uint32,
 ) (*ZKCertificate, error) {
 
+	cert := &ZKCertificate{
+		CertVersion: certVersion,
+		PublicData:  proof.PublicData,
+		ProofData:   proof.ProofData,
+	}
+
+	// Pearl: header.ProofCommitment = cert.ProofCommitment()
+	copy(header.ProofCommitment, cert.ProofCommitment())
+
 	headerBytes, err := header.Serialize()
 	if err != nil {
 		return nil, err
 	}
 
+	cert.HeaderHash = DoubleSHA256(headerBytes)
 
-	
-
-	
-	return &ZKCertificate{
-		CertVersion: certVersion,
-		HeaderHash:  DoubleSHA256(headerBytes),
-		PublicData:  proof.PublicData,
-		ProofData:   proof.ProofData,
-	}, nil
+	return cert, nil
 }

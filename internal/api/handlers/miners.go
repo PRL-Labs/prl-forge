@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"time"
+  "github.com/techobg/prl-forge/internal/pool"
 )
 
 type MinerResponse struct {
@@ -28,6 +29,8 @@ type MinerDashboardResponse struct {
 
 func Miners(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
+
+
 
 	if Pool == nil {
 		json.NewEncoder(w).Encode([]MinerResponse{})
@@ -85,6 +88,16 @@ func Miner(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "pool unavailable", http.StatusServiceUnavailable)
 		return
 	}
+  
+  rawDifficulty := float64(0)
+
+if pool.Client() != nil {
+	if diff, err := pool.Client().GetDifficulty(); err == nil {
+		rawDifficulty = diff
+	}
+
+  }
+
 
 	wallet := r.URL.Query().Get("wallet")
 	if wallet == "" {
@@ -93,9 +106,10 @@ func Miner(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var (
-		hashrate float64
-		online   int
-		lastSeen time.Time
+		hashrate    float64
+		online      int
+		lastSeen    time.Time
+		
 	)
 
 	for _, worker := range Pool.Workers().List() {
@@ -109,10 +123,21 @@ func Miner(w http.ResponseWriter, r *http.Request) {
 			online++
 		}
 
+		
+
 		if worker.LastSeen.After(lastSeen) {
 			lastSeen = worker.LastSeen
 		}
 	}
+
+  
+var personalLuck float64
+
+round := Pool.MinerRounds().Get(wallet)
+
+if round != nil {
+personalLuck = round.Luck(rawDifficulty)
+}
 
 	json.NewEncoder(w).Encode(MinerDashboardResponse{
 		Wallet:          wallet,
@@ -121,7 +146,7 @@ func Miner(w http.ResponseWriter, r *http.Request) {
 		WorkersOnline:   online,
 		LastSeen:        lastSeen,
 		LastBlock:       "N/A",
-		PersonalLuck:    0,
+		PersonalLuck:    personalLuck,
 		Blocks24h:       0,
 		TotalBlocks:     0,
 	})

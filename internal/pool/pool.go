@@ -10,6 +10,7 @@ type Pool struct {
 	workers     *workers.Manager
 	blocks      *blocks.Manager
 	round       *RoundStats
+  minerRounds *MinerRoundManager
 	engine      *Engine
 	history     *history.PoolManager
 	roundHeight int64
@@ -20,6 +21,7 @@ func New() *Pool {
 		workers: workers.NewManager(),
 		blocks:  blocks.NewManager(),
 		round:   NewRoundStats(),
+    minerRounds: NewMinerRoundManager(),
 		engine:  NewEngine(),
 		history: history.NewPool(),
 	}
@@ -61,6 +63,10 @@ func (p *Pool) Blocks() *blocks.Manager {
 func (p *Pool) Round() *RoundStats {
 	return p.round
 }
+func (p *Pool) MinerRounds() *MinerRoundManager {
+	return p.minerRounds
+}
+
 func (p *Pool) SetRoundHeight(height int64) {
 	p.roundHeight = height
 }
