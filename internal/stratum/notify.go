@@ -40,5 +40,19 @@ func SendCurrentJob(session *Session) error {
 		return nil
 	}
 
-	return NotifyJob(session, job)
+	// Make per-session copy.
+	jobCopy := *job
+
+	jobCopy.Difficulty = session.Difficulty
+	jobCopy.Target = job.Target
+
+
+log.Printf(
+    "DIFF=%.0f TARGET=%s",
+    jobCopy.Difficulty,
+    jobCopy.Target,
+)
+
+
+	return NotifyJob(session, &jobCopy)
 }

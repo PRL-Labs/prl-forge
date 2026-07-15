@@ -10,6 +10,7 @@ package zkpow
 #cgo linux LDFLAGS: -L/opt/prl-forge/pearl-master/zk-pow/bindings/go/target/release -lzk_pow_ffi
 
 #include <stdlib.h>
+#include <string.h>
 #include "zk_pow_ffi.h"
 */
 import "C"
@@ -18,6 +19,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"unsafe"
+  "log"
 )
 
 const miningConfigSize = 52
@@ -108,4 +110,108 @@ func ProvePlain(header []byte, proof []byte) error {
 
 
 	return nil
+  
+  
 }
+func VerifyWithNBits(header []byte, proof *ZKProof, nbits uint32) error {
+	if proof == nil {
+		return fmt.Errorf("nil proof")
+	}
+
+	var cProof C.struct_CZKProof
+
+	// Public data
+	cProof.public_data_len = C.uintptr_t(len(proof.PublicData))
+	copy(
+		(*[C.PUBLICDATA_MAX_SIZE]byte)(unsafe.Pointer(&cProof.public_data[0]))[:],
+		proof.PublicData,
+	)
+
+	// Proof blob
+	buf := C.malloc(C.size_t(len(proof.ProofData)))
+	if buf == nil {
+		return fmt.Errorf("malloc failed")
+	}
+	defer C.free(buf)
+
+	C.memcpy(
+		buf,
+		unsafe.Pointer(&proof.ProofData[0]),
+		C.size_t(len(proof.ProofData)),
+	)
+
+	cProof.proof_blob = (*C.uint8_t)(buf)
+	cProof.proof_blob_len = C.uintptr_t(len(proof.ProofData))
+
+	
+var errBuf [C.ERROR_MSG_MAX_SIZE]C.char
+
+cHeader := headerToC(header)
+
+rc := C.verify_zk_proof_v2_with_nbits(
+	&cHeader,
+	&cProof,
+	C.uint32_t(nbits),
+	(*C.char)(unsafe.Pointer(&errBuf[0])),
+)
+
+if rc != 0 {
+	return fmt.Errorf(C.GoString((*C.char)(unsafe.Pointer(&errBuf[0]))))
+}
+
+return nil
+
+}
+
+
+func VerifyNetwork(header []byte, proof *ZKProof,) error {
+log.Println(">>> VerifyNetwork() called")
+
+	if proof == nil {
+		return fmt.Errorf("nil proof")
+	}
+
+	var cProof C.struct_CZKProof
+
+	// Public data
+	cProof.public_data_len = C.uintptr_t(len(proof.PublicData))
+	copy(
+		(*[C.PUBLICDATA_MAX_SIZE]byte)(unsafe.Pointer(&cProof.public_data[0]))[:],
+		proof.PublicData,
+	)
+
+	// Proof blob
+	buf := C.malloc(C.size_t(len(proof.ProofData)))
+	if buf == nil {
+		return fmt.Errorf("malloc failed")
+	}
+	defer C.free(buf)
+
+	C.memcpy(
+		buf,
+		unsafe.Pointer(&proof.ProofData[0]),
+		C.size_t(len(proof.ProofData)),
+	)
+
+	cProof.proof_blob = (*C.uint8_t)(buf)
+	cProof.proof_blob_len = C.uintptr_t(len(proof.ProofData))
+
+	
+var errBuf [C.ERROR_MSG_MAX_SIZE]C.char
+
+cHeader := headerToC(header)
+
+rc := C.verify_zk_proof_v2(
+    &cHeader,
+    &cProof,
+    (*C.char)(unsafe.Pointer(&errBuf[0])),
+)
+
+if rc != 0 {
+	return fmt.Errorf(C.GoString((*C.char)(unsafe.Pointer(&errBuf[0]))))
+}
+
+return nil
+
+}
+

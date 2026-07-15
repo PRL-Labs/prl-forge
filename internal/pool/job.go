@@ -23,7 +23,11 @@ Wallet string
 	Header string
 	HeaderBytes  []byte
     MiningConfig []byte
+    
+    
 	Target string
+  Difficulty float64
+  
     HeaderObj *block.Header
 	Certificate *block.ZKCertificate
 PearlBlock  *block.PearlBlock

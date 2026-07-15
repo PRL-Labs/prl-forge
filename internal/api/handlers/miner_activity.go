@@ -16,7 +16,7 @@ func MinerActivity(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	json.NewEncoder(w).Encode(
-		pool.ActivityHistory().Get(wallet),
-	)
+json.NewEncoder(w).Encode(
+    pool.MinerHistory().Get(wallet),
+)
 }

@@ -8,6 +8,7 @@ import (
 	"io"
 	"log"
 	"time"
+  "strings"
 
 	"github.com/techobg/prl-forge/internal/block"
 	"github.com/techobg/prl-forge/internal/pool"
@@ -76,7 +77,13 @@ func HandleSubmit(session *Session, req *protocol.Request) {
 		return
 	}
 
-	job, ok := GetJob(params.JobID)
+	jobID := params.JobID
+
+if i := strings.IndexByte(jobID, '_'); i >= 0 {
+	jobID = jobID[:i]
+}
+
+job, ok := GetJob(jobID)
 	if !ok {
 		return
 	}
@@ -132,7 +139,12 @@ func HandleSubmit(session *Session, req *protocol.Request) {
 		Error:  nil,
 	})
 
+log.Println(">>> BEFORE ExtractZKProof")
+
 	zk, err := zkpow.ExtractZKProof(job.HeaderBytes, job.Proof)
+  
+  log.Println(">>> AFTER ExtractZKProof")
+  
 	if err != nil {
 		log.Printf("❌ ZK extract failed: %v", err)
 
@@ -145,7 +157,9 @@ func HandleSubmit(session *Session, req *protocol.Request) {
 	}
 
 	job.ZKProof = zk
-
+  
+  
+  
 	cert, err := block.NewZKCertificate(
 		job.HeaderObj,
 		job.ZKProof,
@@ -158,9 +172,17 @@ func HandleSubmit(session *Session, req *protocol.Request) {
 
 	job.Certificate = cert
 
-	if err := pool.SubmitBlock(job); err != nil {
-		log.Printf("❌ SubmitBlock failed: %v", err)
-	} else {
-		log.Println("✅ SubmitBlock finished")
-	}
+	if err := zkpow.VerifyNetwork(job.HeaderBytes, job.ZKProof); err != nil {
+	log.Printf("✅ Share accepted (not a block): %v", err)
+	return
+}
+
+log.Println("🏆 BLOCK FOUND - submitting")
+
+if err := pool.SubmitBlock(job); err != nil {
+	log.Printf("❌ SubmitBlock failed: %v", err)
+} else {
+	log.Println("✅ SubmitBlock finished")
+}
+
 }

@@ -1,7 +1,8 @@
 package stratumadapter
 
 import (
-	"github.com/techobg/prl-forge/internal/pool"
+
+  "github.com/techobg/prl-forge/internal/pool"
 )
 
 type SRBMinerAdapter struct{}
@@ -31,7 +32,7 @@ func (a *SRBMinerAdapter) Notify(job *pool.Job) (any, error) {
 		Params: NotifyParams{
 			Header:      job.Header,
 			Height:      job.Height,
-			JobID:       job.ID,
+			JobID: job.ID,
 			Target:      job.Target,
 			CertVersion: job.CertVersion,
 		},

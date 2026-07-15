@@ -3,6 +3,7 @@ package history
 import (
 	"sync"
 	"time"
+  "log"
 )
 
 type MinerPoint struct {
@@ -21,7 +22,12 @@ func NewMinerManager() *MinerManager {
 	}
 }
 
+
+
 func (m *MinerManager) Add(wallet string, hashrate int64) {
+
+log.Printf("MINER HISTORY ADD -> wallet=%s hashrate=%d", wallet, hashrate)
+
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -43,6 +49,10 @@ func (m *MinerManager) Add(wallet string, hashrate int64) {
 }
 
 func (m *MinerManager) Get(wallet string) []MinerPoint {
+
+log.Printf("MINER HISTORY GET -> wallet=%s points=%d", wallet, len(m.points[wallet]))
+
+
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 

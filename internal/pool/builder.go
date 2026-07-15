@@ -70,18 +70,19 @@ func (b *Builder) Build(tpl *pearl.BlockTemplate) *Job {
 	target := "0000000000001000000000000000000000000000000000000000000000000000"
 
 	job := &Job{
-		ID:            fmt.Sprintf("%d", b.nextID),
-		Height:        tpl.Height,
-		Header:        headerHex,
-		HeaderObj:     header,
-		HeaderBytes:   headerBytes,
-		Target:        target,
-		CertVersion:   2,
-		CoinbaseValue: tpl.CoinbaseValue,
-		CoinbaseFlags: tpl.CoinbaseAux.Flags,
-		Template:      tpl,
-		Clean:         true,
-	}
+	ID:            fmt.Sprintf("%d", b.nextID),
+	Height:        tpl.Height,
+	Header:        headerHex,
+	HeaderObj:     header,
+	HeaderBytes:   headerBytes,
+	Target:        target,
+	Difficulty:    1_000_000_000, // for testing
+	CertVersion:   2,
+	CoinbaseValue: tpl.CoinbaseValue,
+	CoinbaseFlags: tpl.CoinbaseAux.Flags,
+	Template:      tpl,
+	Clean:         true,
+}
 
 	return job
 }
