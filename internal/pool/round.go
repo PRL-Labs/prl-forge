@@ -91,5 +91,5 @@ func (r *RoundStats) Luck(networkDifficulty float64) float64 {
 		return 0
 	}
 
-	return ((r.work / 1000000000) / networkDifficulty) * 100
+	return (r.work / networkDifficulty) * 100
 }

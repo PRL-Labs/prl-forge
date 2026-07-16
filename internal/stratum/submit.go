@@ -9,6 +9,7 @@ import (
 	"log"
 	"time"
   "strings"
+  "strconv"
 
 	"github.com/techobg/prl-forge/internal/block"
 	"github.com/techobg/prl-forge/internal/pool"
@@ -159,6 +160,31 @@ log.Println(">>> BEFORE ExtractZKProof")
 	job.ZKProof = zk
   
   
+   
+  bits, err := strconv.ParseUint(job.NBits, 16, 32)
+if err != nil {
+	log.Printf("parse nbits failed: %v", err)
+} else {
+	shareBits := pool.DifficultyToBitsFromNetwork(
+	uint32(bits),
+	session.Difficulty,
+)
+
+log.Printf(
+	"VERIFY SHARE: networkBits=%08x shareBits=%08x diff=%.2f",
+	uint32(bits),
+	shareBits,
+	session.Difficulty,
+)
+
+err = zkpow.VerifyWithNBits(
+	job.HeaderBytes,
+	job.ZKProof,
+	shareBits,
+)
+
+	log.Printf("VerifyWithNBits: %v", err)
+}
   
 	cert, err := block.NewZKCertificate(
 		job.HeaderObj,
@@ -171,6 +197,9 @@ log.Println(">>> BEFORE ExtractZKProof")
 	}
 
 	job.Certificate = cert
+  
+  
+  
 
 	if err := zkpow.VerifyNetwork(job.HeaderBytes, job.ZKProof); err != nil {
 	log.Printf("✅ Share accepted (not a block): %v", err)

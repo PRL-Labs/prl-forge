@@ -57,7 +57,8 @@ func HandleAuthorize(session *Session, req *protocol.Request) {
 	session.Authorized = true
 	session.Wallet = wallet
 	session.Worker = worker
-	session.Difficulty = 1.0
+	session.Difficulty = 1.00
+  session.DisplayDifficulty = 1 << 33
 
 	if p := pool.Current(); p != nil {
 
@@ -98,9 +99,5 @@ func HandleAuthorize(session *Session, req *protocol.Request) {
 		return
 	}
 
-	if err := SendCurrentJob(session); err != nil {
-		log.Printf("notify: %v", err)
-		return
-	}
 	log.Println("✅ Authorization completed")
 }

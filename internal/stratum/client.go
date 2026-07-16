@@ -10,7 +10,10 @@ func (s *Server) handleConnection(conn net.Conn) {
 	log.Printf("Remote: %s", conn.RemoteAddr())
 
 	session := NewSession(conn)
-	session.Run()
-	s.Unregister(conn)
+
+s.Register(session)
+
+session.Run()
+	
 	log.Println("========== CONNECTION CLOSED ==========")
 }

@@ -12,17 +12,21 @@ import (
 )
 
 type Session struct {
-	conn net.Conn
+    conn net.Conn
 
-	Subscribed bool
-	Authorized bool
+    Subscribed bool
+    Authorized bool
 
-	Wallet string
-	Worker string
-       
-	Difficulty float64
-LastShare time.Time
+    Wallet string
+    Worker string
 
+    // Difficulty used by VerifyWithNBits()
+    Difficulty float64
+
+    // Difficulty shown to SRBMiner (job_id suffix)
+    DisplayDifficulty uint64
+
+    LastShare time.Time
 }
 
 func NewSession(conn net.Conn) *Session {

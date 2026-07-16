@@ -136,6 +136,12 @@ let bound = extract_difficulty_bound(
 );
 
 println!("BOUND = {:x}", bound);
+
+println!(
+    "NBITS = {:08x}",
+    nbits_override.unwrap_or(block_header.nbits)
+);
+
     check_jackpot_against_nbits(&public_params, nbits_override)?;
 
     Ok(())

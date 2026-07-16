@@ -11,13 +11,13 @@ type Server struct {
 	address string
 
 	mu      sync.Mutex
-	clients map[net.Conn]bool
+clients map[net.Conn]*Session
 }
 
 func New(address string) *Server {
 	return &Server{
 		address: address,
-		clients: make(map[net.Conn]bool),
+		clients: make(map[net.Conn]*Session),
 	}
 }
 
@@ -38,17 +38,17 @@ func (s *Server) Start() error {
 
 		log.Printf("🔌 Miner connected: %s", conn.RemoteAddr())
 
-		s.Register(conn)
+
 
 		go s.handleConnection(conn)
 	}
 }
 
-func (s *Server) Register(conn net.Conn) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
+func (s *Server) Register(session *Session) {
+    s.mu.Lock()
+    defer s.mu.Unlock()
 
-	s.clients[conn] = true
+    s.clients[session.conn] = session
 }
 
 func (s *Server) Unregister(conn net.Conn) {
@@ -66,10 +66,9 @@ func (s *Server) Broadcast(job *Job) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	for conn := range s.clients {
-		session := NewSession(conn)
+	for conn, session := range s.clients {
 
-		if err := NotifyJob(session, job); err != nil {
+    if err := SendCurrentJob(session); err != nil {
                log.Printf("NotifyJob ERROR for %s: %v", conn.RemoteAddr(), err)
 			conn.Close()
 			delete(s.clients, conn)

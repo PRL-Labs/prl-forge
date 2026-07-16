@@ -149,10 +149,10 @@ var errBuf [C.ERROR_MSG_MAX_SIZE]C.char
 cHeader := headerToC(header)
 
 rc := C.verify_zk_proof_v2_with_nbits(
-	&cHeader,
-	&cProof,
-	C.uint32_t(nbits),
-	(*C.char)(unsafe.Pointer(&errBuf[0])),
+    &cHeader,
+    &cProof,
+    C.uint32_t(nbits),
+    (*C.char)(unsafe.Pointer(&errBuf[0])),
 )
 
 if rc != 0 {

@@ -32,7 +32,9 @@ func (s *Session) jobLoop() {
 
 		log.Printf("📦 Sending new job %s", job.ID)
 
-		if err := NotifyJob(s, job); err != nil {
+	
+if err := SendCurrentJob(s); err != nil {
+
 			log.Printf("notify error: %v", err)
 			return
 		}

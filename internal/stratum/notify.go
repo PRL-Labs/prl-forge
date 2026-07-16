@@ -2,6 +2,7 @@ package stratum
 
 import (
 	"log"
+  "fmt"
 
 	stratumadapter "github.com/techobg/prl-forge/internal/adapter/stratum"
 )
@@ -45,7 +46,7 @@ func SendCurrentJob(session *Session) error {
 
 	jobCopy.Difficulty = session.Difficulty
 	jobCopy.Target = job.Target
-
+jobCopy.ID = fmt.Sprintf("%s_%d", job.ID, session.DisplayDifficulty)
 
 log.Printf(
     "DIFF=%.0f TARGET=%s",
