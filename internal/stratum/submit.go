@@ -119,6 +119,7 @@ job, ok := GetJob(jobID)
 
 		// Track current mining round
 		p.Round().AddShare(session.Difficulty)
+    p.MinerRounds().AddShare(session.Wallet, session.Difficulty)
 
 		log.Printf(
 			"ADD SHARE -> shares=%d work=%.2f diff=%.2f",
@@ -131,6 +132,12 @@ job, ok := GetJob(jobID)
 		if err := pool.SaveRoundStats(p.RoundHeight(), p.Round()); err != nil {
 			log.Printf("failed to save round: %v", err)
 		}
+    
+    
+    if err := pool.SaveMinerRounds(p.MinerRounds()); err != nil {
+    log.Printf("failed to save miner rounds: %v", err)
+}
+    
 	}
 
 	// Accept share immediately

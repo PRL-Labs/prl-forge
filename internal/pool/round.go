@@ -15,6 +15,11 @@ type RoundStats struct {
         started    time.Time
         lastSample time.Time
         lastWork   float64
+        
+        miningSeconds time.Duration
+	online         bool
+	sessionStarted time.Time
+        
 }
 
 func NewRoundStats() *RoundStats {
@@ -92,4 +97,56 @@ func (r *RoundStats) Luck(networkDifficulty float64) float64 {
 	}
 
 	return (r.work / networkDifficulty) * 100
+}
+
+func (r *RoundStats) StartSession() {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	if r.online {
+		return
+	}
+
+	r.online = true
+	r.sessionStarted = time.Now()
+}
+
+func (r *RoundStats) StopSession() {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	if !r.online {
+		return
+	}
+
+	r.miningSeconds += time.Since(r.sessionStarted)
+	r.online = false
+}
+
+func (r *RoundStats) EffectiveMiningSeconds() float64 {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	total := r.miningSeconds
+
+	if r.online {
+		total += time.Since(r.sessionStarted)
+	}
+
+	return total.Seconds()
+}
+
+func (r *RoundStats) Online() bool {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+
+	return r.online
+}
+
+func (r *RoundStats) SessionStarted() time.Time {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	return r.sessionStarted
 }
