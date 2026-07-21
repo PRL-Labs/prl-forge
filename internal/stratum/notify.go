@@ -45,15 +45,15 @@ func SendCurrentJob(session *Session) error {
 	jobCopy := *job
 
 	jobCopy.Difficulty = session.Difficulty
-	jobCopy.Target = job.Target
-jobCopy.ID = fmt.Sprintf("%s_%d", job.ID, session.DisplayDifficulty)
+jobCopy.Target = job.Target
+	jobCopy.ID = fmt.Sprintf("%s_%d", job.ID, session.DisplayDifficulty)
 
-log.Printf(
-    "DIFF=%.0f TARGET=%s",
-    jobCopy.Difficulty,
-    jobCopy.Target,
-)
+	log.Printf(
+		"DIFF=%.0f TARGET=%s",
+		jobCopy.Difficulty,
+		jobCopy.Target,
+	)
 
-
+	
 	return NotifyJob(session, &jobCopy)
 }

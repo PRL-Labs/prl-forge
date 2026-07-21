@@ -118,11 +118,11 @@ job, ok := GetJob(jobID)
 			log.Printf("WorkerHistory: %s.%s = %.0f", session.Wallet, session.Worker, params.HS)
 		}
 
-	// Track current mining round
-p.Round().AddShare(session.Difficulty)
+// Track current mining round
+p.Round().AddShare(1)
 p.MinerRounds().AddShare(
-	session.Wallet,
-	session.Difficulty,
+    session.Wallet,
+    1,
 )
 
 		log.Printf(
@@ -137,6 +137,16 @@ p.MinerRounds().AddShare(
 newDiff := pool.VarDiff().ObserveShare(session.Wallet)
 
 session.DisplayDifficulty = vardiff.ToDisplayDifficulty(newDiff)
+
+
+
+
+session.Difficulty = newDiff
+
+if err := SendCurrentJob(session); err != nil {
+	log.Printf("SendCurrentJob: %v", err)
+}
+
 
 log.Printf(
         "VARDIFF -> wallet=%s diff=%.0f display=%d",
