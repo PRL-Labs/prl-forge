@@ -34,6 +34,13 @@ func (p *Pool) StartNewRound(height int64) {
 
 	p.round.Reset()
 	p.roundHeight = height
+  
+  
+  p.minerRounds = NewMinerRoundManager()
+
+if err := SaveMinerRounds(p.minerRounds); err != nil {
+	log.Printf("failed to save miner rounds: %v", err)
+}
 
 	if err := SaveRoundStats(height, p.round); err != nil {
 		log.Printf("failed to save round: %v", err)

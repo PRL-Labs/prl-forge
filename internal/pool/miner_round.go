@@ -7,8 +7,8 @@ import (
 )
 
 type MinerRoundData struct {
-	Shares uint64  `json:"shares"`
-	Work   float64 `json:"work"`
+    Shares uint64  `json:"shares"`
+    Work   float64 `json:"work"`
 }
 
 type MinerRoundManager struct {
@@ -70,10 +70,10 @@ func (m *MinerRoundManager) Export() map[string]MinerRoundData {
 	out := make(map[string]MinerRoundData, len(m.rounds))
 
 	for wallet, round := range m.rounds {
-		out[wallet] = MinerRoundData{
-			Shares: round.Shares(),
-			Work:   round.Work(),
-		}
+out[wallet] = MinerRoundData{
+    Shares: round.Shares(),
+    Work:   round.Work(),
+}
 	}
 
 	return out

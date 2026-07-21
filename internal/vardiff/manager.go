@@ -35,7 +35,7 @@ func New() *Manager {
 }
 
 func (m *Manager) ObserveShare(wallet string) float64 {
-panic("VARDIFF TEST")
+
 
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -120,4 +120,36 @@ func (m *Manager) CurrentDifficulty(wallet string) float64 {
 	}
 
 	return diff
+}
+
+func ToDisplayDifficulty(diff float64) uint64 {
+	switch uint64(diff) {
+
+	case 1_000_000_000:
+		return 1 << 33 // 8G
+
+	case 2_000_000_000:
+		return 1 << 34 // 16G
+
+	case 4_000_000_000:
+		return 1 << 35 // 32G
+
+	case 8_000_000_000:
+		return 1 << 36 // 64G
+
+	case 16_000_000_000:
+		return 1 << 37 // 128G
+
+	case 32_000_000_000:
+		return 1 << 38 // 256G
+
+	case 64_000_000_000:
+		return 1 << 39 // 512G
+
+	case 128_000_000_000:
+		return 1 << 40 // 1T
+
+	default:
+		return 1 << 33
+	}
 }

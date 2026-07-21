@@ -15,6 +15,7 @@ import (
 	"github.com/techobg/prl-forge/internal/pool"
 	"github.com/techobg/prl-forge/internal/stratum/protocol"
 	"github.com/techobg/prl-forge/internal/zkpow"
+  "github.com/techobg/prl-forge/internal/vardiff"
 )
 
 type SubmitParams struct {
@@ -117,8 +118,12 @@ job, ok := GetJob(jobID)
 			log.Printf("WorkerHistory: %s.%s = %.0f", session.Wallet, session.Worker, params.HS)
 		}
 
-		// Track current mining round
-		p.Round().AddShare(session.Difficulty)
+	// Track current mining round
+p.Round().AddShare(session.Difficulty)
+p.MinerRounds().AddShare(
+	session.Wallet,
+	session.Difficulty,
+)
 
 		log.Printf(
 			"ADD SHARE -> shares=%d work=%.2f diff=%.2f",
@@ -127,10 +132,28 @@ job, ok := GetJob(jobID)
 			session.Difficulty,
 		)
 
+
+
+newDiff := pool.VarDiff().ObserveShare(session.Wallet)
+
+session.DisplayDifficulty = vardiff.ToDisplayDifficulty(newDiff)
+
+log.Printf(
+        "VARDIFF -> wallet=%s diff=%.0f display=%d",
+        session.Wallet,
+        newDiff,
+        session.DisplayDifficulty,
+)
+
+
 		// Persist current round
 		if err := pool.SaveRoundStats(p.RoundHeight(), p.Round()); err != nil {
 			log.Printf("failed to save round: %v", err)
 		}
+    
+    if err := pool.SaveMinerRounds(p.MinerRounds()); err != nil {
+	log.Printf("failed to save miner rounds: %v", err)
+}
 	}
 
 	// Accept share immediately
