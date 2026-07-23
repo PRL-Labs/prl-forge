@@ -78,3 +78,16 @@ func DifficultyToBitsFromNetwork(networkBits uint32, shareDiff float64) uint32 {
 
 	return BigToCompact(target)
 }
+
+// CalcWork  1:1  Pearl node.
+func CalcWork(bits uint32) *big.Int {
+	target := CompactToBig(bits)
+
+	if target.Sign() <= 0 {
+		return big.NewInt(0)
+	}
+
+	denominator := new(big.Int).Add(target, bigOne)
+
+	return new(big.Int).Div(oneLsh256, denominator)
+}

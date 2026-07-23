@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
   "github.com/techobg/prl-forge/internal/pool"
+  "log"
 )
 
 type MinerResponse struct {
@@ -136,6 +137,13 @@ var personalLuck float64
 round := Pool.MinerRounds().Get(wallet)
 
 if round != nil {
+
+log.Printf(
+    "MINER difficulty=%.0f roundWork=%.0f",
+    rawDifficulty,
+    round.Work(),
+)
+
 personalLuck = round.Luck(rawDifficulty)
 }
 

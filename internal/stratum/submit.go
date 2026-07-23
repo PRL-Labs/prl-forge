@@ -15,7 +15,7 @@ import (
 	"github.com/techobg/prl-forge/internal/pool"
 	"github.com/techobg/prl-forge/internal/stratum/protocol"
 	"github.com/techobg/prl-forge/internal/zkpow"
-  "github.com/techobg/prl-forge/internal/vardiff"
+
 )
 
 type SubmitParams struct {
@@ -119,24 +119,20 @@ job, ok := GetJob(jobID)
 		}
 
 // Track current mining round
-p.Round().AddShare(1)
-p.MinerRounds().AddShare(
-    session.Wallet,
-    1,
-)
 
-		log.Printf(
-			"ADD SHARE -> shares=%d work=%.2f diff=%.2f",
-			p.Round().Shares(),
-			p.Round().Work(),
-			session.Difficulty,
-		)
+
+
+const LuckShareWeight = 18.0
+
+p.Round().AddShare(LuckShareWeight)
+p.MinerRounds().AddShare(session.Wallet, LuckShareWeight)
+
 
 
 
 newDiff := pool.VarDiff().ObserveShare(session.Wallet)
 
-session.DisplayDifficulty = vardiff.ToDisplayDifficulty(newDiff)
+
 
 
 
@@ -193,28 +189,43 @@ log.Println(">>> BEFORE ExtractZKProof")
 	job.ZKProof = zk
   
   
+ 
    
-  bits, err := strconv.ParseUint(job.NBits, 16, 32)
+bits64, err := strconv.ParseUint(job.NBits, 16, 32)
 if err != nil {
 	log.Printf("parse nbits failed: %v", err)
 } else {
+	networkBits := uint32(bits64)
+
+	
+
 	shareBits := pool.DifficultyToBitsFromNetwork(
-	uint32(bits),
-	session.Difficulty,
-)
+		networkBits,
+		session.Difficulty,
+	)
+
+	log.Printf(
+		"VERIFY SHARE: networkBits=%08x shareBits=%08x diff=%.2f",
+		networkBits,
+		shareBits,
+		session.Difficulty,
+	)
+  
+  shareWork := pool.CalcWork(shareBits)
+networkWork := pool.CalcWork(networkBits)
 
 log.Printf(
-	"VERIFY SHARE: networkBits=%08x shareBits=%08x diff=%.2f",
-	uint32(bits),
-	shareBits,
-	session.Difficulty,
+    "SHARE WORK=%s NETWORK WORK=%s",
+    shareWork.String(),
+    networkWork.String(),
 )
+  
 
-err = zkpow.VerifyWithNBits(
-	job.HeaderBytes,
-	job.ZKProof,
-	shareBits,
-)
+	err = zkpow.VerifyWithNBits(
+		job.HeaderBytes,
+		job.ZKProof,
+		shareBits,
+	)
 
 	log.Printf("VerifyWithNBits: %v", err)
 }

@@ -82,6 +82,13 @@ func Dashboard(w http.ResponseWriter, r *http.Request) {
 	if Pool != nil {
 		round.Shares = Pool.Round().Shares()
 		round.Work = Pool.Round().Work()
+    
+    log.Printf(
+    "DASHBOARD difficulty=%d roundWork=%.0f",
+    difficulty,
+    Pool.Round().Work(),
+)
+    
 		round.Luck = Pool.Round().Luck(float64(difficulty))
 	}
 
