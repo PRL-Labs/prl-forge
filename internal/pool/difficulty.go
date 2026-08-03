@@ -79,6 +79,21 @@ func DifficultyToBitsFromNetwork(networkBits uint32, shareDiff float64) uint32 {
 	return BigToCompact(target)
 }
 
+
+func BitsToDifficulty(bits uint32) float64 {
+	powLimitBits := uint32(0x1b00ffff)
+
+	max := CompactToBig(powLimitBits)
+	target := CompactToBig(bits)
+
+	difficulty := new(big.Rat).SetFrac(max, target)
+
+	diff, _ := difficulty.Float64()
+
+	return diff
+}
+
+
 // CalcWork  1:1  Pearl node.
 func CalcWork(bits uint32) *big.Int {
 	target := CompactToBig(bits)

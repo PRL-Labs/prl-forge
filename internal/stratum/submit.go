@@ -10,6 +10,7 @@ import (
 	"time"
   "strings"
   "strconv"
+  "math/big"
 
 	"github.com/techobg/prl-forge/internal/block"
 	"github.com/techobg/prl-forge/internal/pool"
@@ -128,8 +129,6 @@ p.Round().AddShare(LuckShareWeight)
 p.MinerRounds().AddShare(session.Wallet, LuckShareWeight)
 
 
-
-
 newDiff := pool.VarDiff().ObserveShare(session.Wallet)
 
 
@@ -204,6 +203,18 @@ if err != nil {
 		session.Difficulty,
 	)
 
+
+
+testBits := pool.DifficultyToBitsFromNetwork(
+    networkBits,
+    8,
+)
+
+log.Printf(
+    "TEST DIFF=8 -> %.8f",
+    pool.BitsToDifficulty(testBits),
+)
+
 	log.Printf(
 		"VERIFY SHARE: networkBits=%08x shareBits=%08x diff=%.2f",
 		networkBits,
@@ -211,8 +222,19 @@ if err != nil {
 		session.Difficulty,
 	)
   
+  shareDifficulty := pool.BitsToDifficulty(shareBits)
+
+log.Printf(
+    "SHARE DIFFICULTY = %.8f",
+    shareDifficulty,
+)
+  
   shareWork := pool.CalcWork(shareBits)
 networkWork := pool.CalcWork(networkBits)
+
+ratio := new(big.Rat).SetFrac(shareWork, networkWork)
+log.Printf("WORK RATIO = %s", ratio.FloatString(12))
+
 
 log.Printf(
     "SHARE WORK=%s NETWORK WORK=%s",
