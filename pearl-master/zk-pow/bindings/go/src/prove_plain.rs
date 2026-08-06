@@ -36,9 +36,23 @@ let proof = match PlainProof::deserialize_compat(proof_bytes) {
     }
 };
 
+println!("PROVE CACHE BEFORE");
+
 let mut cache = acquire_cache();
 
+println!("PROVE CACHE AFTER");
+
 let result = match catch_panic(|| {
+    println!("PROVE START");
+
+
+println!("========== PROVE HEADER ==========");
+println!("VERSION = {:08x}", (*_block_header).version);
+println!("TIME    = {:08x}", (*_block_header).timestamp);
+println!("NBITS   = {:08x}", (*_block_header).nbits);
+println!("PREV    = {:02x?}", (*_block_header).prev_block);
+println!("MRKL    = {:02x?}", (*_block_header).merkle_root);
+println!("==================================");
     prove::zk_prove_plain_proof(
         *_block_header,
         &proof,
@@ -56,6 +70,11 @@ let result = match catch_panic(|| {
         return -1;
     }
 };
+
+drop(cache);
+println!("CACHE DROPPED");
+
+println!("PROVE FINISHED");
 
 let out = unsafe { &mut *_zk_proof_out };
 

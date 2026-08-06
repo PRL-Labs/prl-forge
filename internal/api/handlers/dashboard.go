@@ -37,7 +37,7 @@ type NetworkInfo struct {
 
 type RoundInfo struct {
 	Shares uint64  `json:"shares"`
-	Work   float64 `json:"work"`
+	Work string `json:"work"`
 	Luck   float64 `json:"luck"`
 }
 
@@ -81,32 +81,25 @@ func Dashboard(w http.ResponseWriter, r *http.Request) {
 
 	if Pool != nil {
 		round.Shares = Pool.Round().Shares()
-		round.Work = Pool.Round().Work()
+	round.Work = Pool.Round().Work().String()
     
     log.Printf(
-    "DASHBOARD difficulty=%d roundWork=%.0f",
+    "DASHBOARD difficulty=%d roundWork=%s",
     difficulty,
-    Pool.Round().Work(),
+    Pool.Round().Work().String(),
 )
-    
+
 		round.Luck = Pool.Round().Luck(float64(difficulty))
 	}
 
-	log.Printf(
-		"DEBUG LUCK -> shares=%d work=%.2f difficulty=%f formula=%f",
-		round.Shares,
-		round.Work,
-		float64(difficulty),
-		round.Work/float64(difficulty),
-	)
 
-	log.Printf(
-		"ROUND TEST -> shares=%d work=%.2f diff=%d luck=%.8f",
-		round.Shares,
-		round.Work,
-		difficulty,
-		round.Luck,
-	)
+log.Printf(
+    "ROUND TEST -> shares=%d work=%s diff=%d luck=%.8f",
+    round.Shares,
+    round.Work,
+    difficulty,
+    round.Luck,
+)
 
 	resp := DashboardResponse{
 		Pool: PoolInfo{

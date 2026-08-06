@@ -1,10 +1,11 @@
 package stratum
 
 import (
-	"log"
-  "fmt"
+    "fmt"
+    "log"
 
-	stratumadapter "github.com/techobg/prl-forge/internal/adapter/stratum"
+    "github.com/techobg/prl-forge/internal/pool"
+    stratumadapter "github.com/techobg/prl-forge/internal/adapter/stratum"
 )
 
 var adapter = stratumadapter.NewSRBMinerAdapter()
@@ -41,12 +42,16 @@ func SendCurrentJob(session *Session) error {
 		return nil
 	}
 
+	// ВЗЕМИ текущата VarDiff преди да пратиш job
+	session.Difficulty = pool.VarDiff().CurrentDifficulty(session.Wallet)
+
 	// Make per-session copy.
 	jobCopy := *job
 
 	jobCopy.Difficulty = session.Difficulty
-jobCopy.Target = job.Target
+	jobCopy.Target = job.Target
 	jobCopy.ID = fmt.Sprintf("%s_%d", job.ID, session.DisplayDifficulty)
+  engine.Jobs.Add(&jobCopy)
 
 	log.Printf(
 		"DIFF=%.0f TARGET=%s",
@@ -54,6 +59,5 @@ jobCopy.Target = job.Target
 		jobCopy.Target,
 	)
 
-	
 	return NotifyJob(session, &jobCopy)
 }

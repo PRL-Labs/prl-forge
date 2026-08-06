@@ -145,6 +145,45 @@ pub fn public_params_sanity_check(public_params: &PublicProofParams) -> Result<(
 pub fn check_jackpot_against_nbits(public_params: &PublicProofParams, nbits_override: Option<u32>) -> Result<()> {
     let nbits = nbits_override.unwrap_or(public_params.block_header.nbits);
     let jackpot_hash_bound = extract_difficulty_bound(nbits, &public_params.mining_config);
+    
+    
+    let network_bound = extract_difficulty_bound(
+    public_params.block_header.nbits,
+    &public_params.mining_config,
+);
+
+println!("NETWORK BOUND = {:x}", network_bound);
+println!("SHARE BOUND   = {:x}", jackpot_hash_bound);
+    
+    
+    let hash = U256::from_little_endian(&public_params.hash_jackpot());
+    
+    
+    let hash_be = U256::from_big_endian(&public_params.hash_jackpot());
+
+println!("LE CMP");
+if hash <= jackpot_hash_bound {
+    println!("LE PASS");
+} else {
+    println!("LE FAIL");
+}
+
+println!("BE CMP");
+if hash_be <= jackpot_hash_bound {
+    println!("BE PASS");
+} else {
+    println!("BE FAIL");
+}
+    
+
+println!("=================================");
+println!("HASH RAW    = {:02x?}", public_params.hash_jackpot());
+println!("HASH U256   = {:x}", hash);
+println!("BOUND       = {:x}", jackpot_hash_bound);
+println!("NBITS       = {:08x}", nbits);
+println!("PASS        = {}", hash <= jackpot_hash_bound);
+println!("=================================");
+    
     // hash_jackpot is interpreted as a little-endian 256-bit integer for the difficulty check
     ensure!(
         U256::from_little_endian(&public_params.hash_jackpot()) <= jackpot_hash_bound,

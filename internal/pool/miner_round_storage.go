@@ -6,6 +6,7 @@ import (
     "encoding/json"
     "log"
     "os"
+    "math/big"
     
 )
 
@@ -52,15 +53,25 @@ func LoadMinerRounds() (*MinerRoundManager, error) {
 
 	for wallet, state := range data {
         log.Printf(
-                "RESTORE wallet=%s shares=%d work=%.2f",
-                wallet,
-                state.Shares,
-                state.Work,
-        )
+    "RESTORE wallet=%s shares=%d work=%s",
+    wallet,
+    state.Shares,
+    state.Work,
+)
 
-       m.rounds[wallet] = &RoundStats{
+      work := new(big.Int)
+
+if state.Work != "" {
+    if _, ok := work.SetString(state.Work, 10); !ok {
+        log.Printf("invalid work for wallet %s: %q", wallet, state.Work)
+        work = new(big.Int)
+    }
+}
+
+m.rounds[wallet] = &RoundStats{
     shares: state.Shares,
-    work:   state.Work,
+    work:   work,
+    lastWork: new(big.Int),
 }
 }
 

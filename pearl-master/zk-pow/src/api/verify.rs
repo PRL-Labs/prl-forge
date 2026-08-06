@@ -128,7 +128,15 @@ pub fn verify_plain_proof(
 
     // Compute the actual jackpot hash and check the difficulty condition
     public_params.hash_jackpot = compute_jackpot_hash(&jackpot, compiled.a_noise_seed());
+    
+    
+    println!("RECOMPUTED HASH = {:02x?}", public_params.hash_jackpot());
+    
 
+println!(
+    "HASH_JACKPOT = {:02x?}",
+    public_params.hash_jackpot()
+);
   
 let bound = extract_difficulty_bound(
     nbits_override.unwrap_or(block_header.nbits),
@@ -143,6 +151,12 @@ println!(
 );
 
     check_jackpot_against_nbits(&public_params, nbits_override)?;
+    
+   println!(
+    "VERIFY HASH_JACKPOT = {:02x?}",
+    public_params.hash_jackpot()
+);
 
     Ok(())
 }
+

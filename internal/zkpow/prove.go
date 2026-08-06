@@ -33,6 +33,10 @@ var defaultMiningConfigV1 = [miningConfigSize]byte{
 }
 
 func headerToC(header []byte) C.IncompleteBlockHeader {
+
+log.Printf("HEADER LEN=%d", len(header))
+log.Printf("HEADER HEX=%x", header)
+
 	var cHeader C.IncompleteBlockHeader
 
 	cHeader.version = C.uint32_t(binary.LittleEndian.Uint32(header[0:4]))
@@ -44,6 +48,14 @@ func headerToC(header []byte) C.IncompleteBlockHeader {
 
 	cHeader.timestamp = C.uint32_t(binary.LittleEndian.Uint32(header[68:72]))
 	cHeader.nbits = C.uint32_t(binary.LittleEndian.Uint32(header[72:76]))
+  
+  
+  log.Printf(
+    "C HEADER version=%08x time=%08x nbits=%08x",
+    uint32(cHeader.version),
+    uint32(cHeader.timestamp),
+    uint32(cHeader.nbits),
+)
 
 	return cHeader
 }
@@ -148,12 +160,18 @@ var errBuf [C.ERROR_MSG_MAX_SIZE]C.char
 
 cHeader := headerToC(header)
 
+log.Println("C1")
+
+
 rc := C.verify_zk_proof_v2_with_nbits(
     &cHeader,
     &cProof,
     C.uint32_t(nbits),
     (*C.char)(unsafe.Pointer(&errBuf[0])),
 )
+
+
+log.Println("C2")
 
 if rc != 0 {
 	return fmt.Errorf(C.GoString((*C.char)(unsafe.Pointer(&errBuf[0]))))

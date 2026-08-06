@@ -73,3 +73,17 @@ func (jm *JobManager) SetCurrent(job *Job) {
 		delete(jm.jobs, oldest)
 	}
 }
+func (jm *JobManager) Add(job *Job) {
+        jm.mu.Lock()
+        defer jm.mu.Unlock()
+
+        jm.jobs[job.ID] = job
+
+        jm.order = append(jm.order, job.ID)
+
+        if len(jm.order) > jm.maxJobs {
+                oldest := jm.order[0]
+                jm.order = jm.order[1:]
+                delete(jm.jobs, oldest)
+        }
+}

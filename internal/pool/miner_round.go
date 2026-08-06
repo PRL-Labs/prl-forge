@@ -4,12 +4,14 @@ import (
 	"encoding/json"
 	"os"
 	"sync"
+  "math/big"
 )
 
 type MinerRoundData struct {
-    Shares uint64  `json:"shares"`
-    Work   float64 `json:"work"`
+    Shares uint64 `json:"shares"`
+    Work   string `json:"work"`
 }
+
 
 type MinerRoundManager struct {
 	mu     sync.RWMutex
@@ -22,7 +24,7 @@ func NewMinerRoundManager() *MinerRoundManager {
 	}
 }
 
-func (m *MinerRoundManager) AddShare(wallet string, diff float64) {
+func (m *MinerRoundManager) AddWork(wallet string, work *big.Int) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -32,7 +34,7 @@ func (m *MinerRoundManager) AddShare(wallet string, diff float64) {
 		m.rounds[wallet] = round
 	}
 
-	round.AddShare(diff)
+round.AddWork(work)
 }
 
 func (m *MinerRoundManager) Get(wallet string) *RoundStats {
@@ -72,7 +74,7 @@ func (m *MinerRoundManager) Export() map[string]MinerRoundData {
 	for wallet, round := range m.rounds {
 out[wallet] = MinerRoundData{
     Shares: round.Shares(),
-    Work:   round.Work(),
+    Work: round.Work().String(),
 }
 	}
 

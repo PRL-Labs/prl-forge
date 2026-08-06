@@ -49,7 +49,26 @@ lazy_static::lazy_static! {
 /// Acquires the circuit cache. Recovers from poisoned mutex if a prior panic occurred.
 /// The cache data is still valid for verifier after a panic, since the CircuitCache is read only.
 pub(crate) fn acquire_cache() -> std::sync::MutexGuard<'static, CircuitCache> {
-    CIRCUIT_CACHE.lock().unwrap_or_else(|poisoned| poisoned.into_inner())
+
+let tid = std::thread::current().id();
+
+
+    println!("LOCK REQUEST {:?}", tid);
+
+    let start = std::time::Instant::now();
+
+
+    let guard = CIRCUIT_CACHE
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+
+   println!(
+        "LOCK ACQUIRED {:?} after {:?}",
+        tid,
+        start.elapsed(),
+    );
+
+    guard
 }
 
 /// Acquires the V1 circuit cache for version-1 proof verification.

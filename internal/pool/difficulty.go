@@ -1,6 +1,9 @@
- package pool
+package pool
 
-import "math/big"
+import (
+    "log"
+    "math/big"
+)
 
 var (
 	bigOne    = big.NewInt(1)
@@ -67,17 +70,52 @@ func DifficultyToBitsFromNetwork(networkBits uint32, shareDiff float64) uint32 {
 
 	networkTarget := CompactToBig(networkBits)
 
+	networkDiff := BitsToDifficulty(networkBits)
+
+	scale := new(big.Float).Quo(
+		big.NewFloat(networkDiff),
+		big.NewFloat(shareDiff),
+	)
+
 	targetFloat := new(big.Float).SetInt(networkTarget)
-	targetFloat.Mul(targetFloat, big.NewFloat(shareDiff))
+	targetFloat.Mul(targetFloat, scale)
+
+
+
 
 	target, _ := targetFloat.Int(nil)
+
+
+
+work := CalcWork(BigToCompact(target))
+networkWork := CalcWork(networkBits)
+
+log.Printf("SHARE WORK   = %x", work)
+log.Printf("NETWORK WORK = %x", networkWork)
+log.Printf("SHARE TARGET = %x", target)
+log.Printf("SHARE BITS   = %08x", BigToCompact(target))
+
 
 	if target.Sign() <= 0 {
 		target = big.NewInt(1)
 	}
 
+
+log.Printf("================================")
+log.Printf("NETWORK BITS   = %08x", networkBits)
+log.Printf("NETWORK TARGET = %x", networkTarget)
+log.Printf("NETWORK DIFF   = %.20f", networkDiff)
+log.Printf("REQUEST DIFF   = %.20f", shareDiff)
+log.Printf("SCALE          = %f", scale)
+log.Printf("SHARE TARGET   = %x", target)
+log.Printf("SHARE BITS     = %08x", BigToCompact(target))
+log.Printf("================================")
+
+
 	return BigToCompact(target)
 }
+
+
 
 
 func BitsToDifficulty(bits uint32) float64 {

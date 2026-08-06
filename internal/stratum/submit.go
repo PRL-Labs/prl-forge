@@ -8,7 +8,7 @@ import (
 	"io"
 	"log"
 	"time"
-  "strings"
+ /// "strings"
   "strconv"
   "math/big"
 
@@ -82,21 +82,27 @@ func HandleSubmit(session *Session, req *protocol.Request) {
 
 	jobID := params.JobID
 
-if i := strings.IndexByte(jobID, '_'); i >= 0 {
-	jobID = jobID[:i]
-}
+///if i := strings.IndexByte(jobID, '_'); i >= 0 {
+///	jobID = jobID[:i]
+///}
 
 job, ok := GetJob(jobID)
-	if !ok {
-		return
-	}
+if !ok {
+        log.Printf("JOB NOT FOUND: %s", jobID)
+        return
+}
+
+log.Printf("JOB PTR=%p ID=%s HEIGHT=%d", job, job.ID, job.Height)
 
 	job.Proof = append([]byte(nil), decoded...)
 	job.HS = uint64(params.HS)
 	job.Wallet = session.Wallet
 	job.Worker = session.Worker
 
-	if p := pool.Current(); p != nil {
+	 p := pool.Current()
+if p == nil {
+    return
+}
 		id := session.Wallet + "." + session.Worker
 
 		if w := p.Workers().Get(id); w != nil {
@@ -119,22 +125,21 @@ job, ok := GetJob(jobID)
 			log.Printf("WorkerHistory: %s.%s = %.0f", session.Wallet, session.Worker, params.HS)
 		}
 
-// Track current mining round
 
+	
 
+	// Accept share immediately
 
-const LuckShareWeight = 18.0
+	_ = session.Send(protocol.Response{
+		ID:     req.ID,
+		Result: true,
+		Error:  nil,
+	})
 
-p.Round().AddShare(LuckShareWeight)
-p.MinerRounds().AddShare(session.Wallet, LuckShareWeight)
-
+///p.Round().AddWork(shareWork)
+///p.MinerRounds().AddWork(session.Wallet, shareWork)
 
 newDiff := pool.VarDiff().ObserveShare(session.Wallet)
-
-
-
-
-
 
 session.Difficulty = newDiff
 
@@ -142,38 +147,24 @@ if err := SendCurrentJob(session); err != nil {
 	log.Printf("SendCurrentJob: %v", err)
 }
 
+if err := pool.SaveRoundStats(p.RoundHeight(), p.Round()); err != nil {
+	log.Printf("failed to save round: %v", err)
+}
 
-log.Printf(
-        "VARDIFF -> wallet=%s diff=%.0f display=%d",
-        session.Wallet,
-        newDiff,
-        session.DisplayDifficulty,
-)
-
-
-		// Persist current round
-		if err := pool.SaveRoundStats(p.RoundHeight(), p.Round()); err != nil {
-			log.Printf("failed to save round: %v", err)
-		}
-    
-    if err := pool.SaveMinerRounds(p.MinerRounds()); err != nil {
+if err := pool.SaveMinerRounds(p.MinerRounds()); err != nil {
 	log.Printf("failed to save miner rounds: %v", err)
 }
-	}
 
-	// Accept share immediately
-	_ = session.Send(protocol.Response{
-		ID:     req.ID,
-		Result: true,
-		Error:  nil,
-	})
 
 log.Println(">>> BEFORE ExtractZKProof")
 
-	zk, err := zkpow.ExtractZKProof(job.HeaderBytes, job.Proof)
-  
-  log.Println(">>> AFTER ExtractZKProof")
-  
+	log.Println("1")
+
+zk, err := zkpow.ExtractZKProof(job.HeaderBytes, job.Proof)
+
+log.Println("2")
+
+log.Printf(">>> AFTER ExtractZKProof err=%v", err)
 	if err != nil {
 		log.Printf("❌ ZK extract failed: %v", err)
 
@@ -198,12 +189,17 @@ if err != nil {
 
 	
 
-	shareBits := pool.DifficultyToBitsFromNetwork(
-		networkBits,
-		session.Difficulty,
-	)
+shareBits := pool.DifficultyToBitsFromNetwork(
+        networkBits,
+        job.Difficulty,
+)
 
 
+log.Printf(
+    "VERIFY JOBDIFF=%.0f SESSIONDIFF=%.0f",
+    job.Difficulty,
+    session.Difficulty,
+)
 
 testBits := pool.DifficultyToBitsFromNetwork(
     networkBits,
@@ -243,14 +239,42 @@ log.Printf(
 )
   
 
-	err = zkpow.VerifyWithNBits(
-		job.HeaderBytes,
-		job.ZKProof,
-		shareBits,
-	)
 
-	log.Printf("VerifyWithNBits: %v", err)
+
+
+log.Println(">>> BEFORE VerifyWithNBits")
+
+
+
+log.Printf("JOB PTR VERIFY=%p ID=%s HEIGHT=%d", job, job.ID, job.Height)
+
+log.Println("A")
+
+err = zkpow.VerifyWithNBits(
+job.HeaderBytes,
+job.ZKProof,
+shareBits,
+)
+
+log.Println("B")
+
+log.Printf(">>> AFTER VerifyWithNBits err=%v", err)
+
+err2 := zkpow.VerifyNetwork(job.HeaderBytes, job.ZKProof)
+
+log.Printf("COMPARE -> share=%v network=%v", err, err2)
+
+if err != nil {
+	log.Printf("VerifyWithNBits failed: %v", err)
+	return
 }
+
+
+
+log.Printf("VerifyWithNBits OK")
+
+
+
   
 	cert, err := block.NewZKCertificate(
 		job.HeaderObj,
@@ -259,7 +283,7 @@ log.Printf(
 	)
 	if err != nil {
 		log.Printf("❌ Certificate build failed: %v", err)
-		return
+		
 	}
 
 	job.Certificate = cert
@@ -279,5 +303,5 @@ if err := pool.SubmitBlock(job); err != nil {
 } else {
 	log.Println("✅ SubmitBlock finished")
 }
-
+}
 }

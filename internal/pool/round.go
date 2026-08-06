@@ -2,38 +2,46 @@ package pool
 
 import (
 	"log"
+	"math/big"
 	"sync"
-  "time"
+	"time"
 )
 
 type RoundStats struct {
-        mu sync.RWMutex
+	mu sync.RWMutex
 
-        shares uint64
-        work   float64
+	shares uint64
+	work   *big.Int
 
-        started    time.Time
-        lastSample time.Time
-        lastWork   float64
+	started    time.Time
+	lastSample time.Time
+	lastWork   *big.Int
 }
 
 func NewRoundStats() *RoundStats {
-        now := time.Now()
+	now := time.Now()
 
-        return &RoundStats{
-                started:    now,
-                lastSample: now,
-        }
+	return &RoundStats{
+		work:       new(big.Int),
+		lastWork:   new(big.Int),
+		started:    now,
+		lastSample: now,
+	}
 }
 
-func (r *RoundStats) AddShare(diff float64) {
+func (r *RoundStats) AddWork(work *big.Int) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
 	r.shares++
-	r.work += diff
 
-	log.Printf("ADD SHARE -> shares=%d work=%.0f", r.shares, r.work)
+	r.work.Add(r.work, work)
+
+	log.Printf(
+		"ADD WORK -> shares=%d work=%s",
+		r.shares,
+		r.work.String(),
+	)
 }
 
 func (r *RoundStats) Reset() {
@@ -41,13 +49,14 @@ func (r *RoundStats) Reset() {
 	defer r.mu.Unlock()
 
 	r.shares = 0
-	r.work = 0
-  
-  now := time.Now()
 
-r.started = now
-r.lastSample = now
-r.lastWork = 0
+	r.work = new(big.Int)
+	r.lastWork = new(big.Int)
+
+	now := time.Now()
+
+	r.started = now
+	r.lastSample = now
 }
 
 func (r *RoundStats) Shares() uint64 {
@@ -57,14 +66,14 @@ func (r *RoundStats) Shares() uint64 {
 	return r.shares
 }
 
-func (r *RoundStats) Work() float64 {
+func (r *RoundStats) Work() *big.Int {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
-	return r.work
+	return new(big.Int).Set(r.work)
 }
 
-func (r *RoundStats) SampleWork() (float64, float64) {
+func (r *RoundStats) SampleWork() (*big.Int, float64) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -72,24 +81,17 @@ func (r *RoundStats) SampleWork() (float64, float64) {
 
 	elapsed := now.Sub(r.lastSample).Seconds()
 	if elapsed <= 0 {
-		return 0, 0
+		return new(big.Int), 0
 	}
 
-	work := r.work - r.lastWork
+	work := new(big.Int).Sub(r.work, r.lastWork)
 
-	r.lastWork = r.work
+	r.lastWork.Set(r.work)
 	r.lastSample = now
 
 	return work, elapsed
 }
 
 func (r *RoundStats) Luck(networkDifficulty float64) float64 {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
-
-	if networkDifficulty <= 0 {
-		return 0
-	}
-
-	return (r.work / networkDifficulty) * 100
+	return 0
 }

@@ -5,6 +5,7 @@
 
 use std::os::raw::c_char;
 use std::slice;
+use crate::common::CIRCUIT_CACHE;
 
 use crate::common::MAX_ZK_PROOF_SIZE;
 use zk_pow::api::proof::{IncompleteBlockHeader, PublicProofParams, ZKProof};
@@ -36,6 +37,9 @@ unsafe fn verify_zk_proof_inner(
             return 2;
         }
 
+
+println!("R1");
+
         let zk_proof_ref = &*zk_proof;
 
         if zk_proof_ref.proof_blob.is_null() || zk_proof_ref.proof_blob_len == 0 {
@@ -57,6 +61,9 @@ unsafe fn verify_zk_proof_inner(
 
         let plonky2_proof = slice::from_raw_parts(zk_proof_ref.proof_blob, zk_proof_ref.proof_blob_len);
         let public_data = &zk_proof_ref.public_data[..zk_proof_ref.public_data_len];
+        
+        println!("R2");
+        
         let (params, zk_proof) = match ZKProof::deserialize(*block_header, public_data, plonky2_proof) {
             Ok(r) => r,
             Err(e) => {
@@ -64,17 +71,62 @@ unsafe fn verify_zk_proof_inner(
                 return 1;
             }
         };
+        
+        
+        
+        println!("========== VERIFY HEADER ==========");
+println!("VERSION = {:08x}", params.block_header.version);
+println!("TIME    = {:08x}", params.block_header.timestamp);
+println!("NBITS   = {:08x}", params.block_header.nbits);
+println!("PREV    = {:02x?}", params.block_header.prev_block);
+println!("MRKL    = {:02x?}", params.block_header.merkle_root);
+println!("==================================");
+        
+  
+  println!("VERIFY HASH = {:02x?}", params.hash_jackpot());
+  
+        println!("R3");
+
+        println!("VERIFY PARAMS READY");
 
         // Acquire circuit cache (immutable - verifier doesn't modify cache)
-        let cache = acquire_cache();
+        
+        println!("R4");
+        
+        println!("CACHE BEFORE");
+
+if CIRCUIT_CACHE.try_lock().is_err() {
+    println!("CACHE IS ALREADY LOCKED");
+} else {
+    println!("CACHE IS FREE");
+}
+
+let cache = acquire_cache();
+
+println!("CACHE AFTER");
+        
+         println!("R5");
+         
+         println!("VERIFY BEFORE");
+
+        println!("CALL verify_block_cached_circuits_only");
 
         // Verify using cached circuits only (no compilation)
+        
+       
+        
+        
+        
+        
+        
         match verify::verify_block_cached_circuits_only(&params, &zk_proof, &cache, nbits_override) {
             Ok(_) => {
                 set_error_msg(error_msg_out, "Proof verified successfully");
                 0
             }
             Err(e) => {
+            println!("VERIFY ERROR = {}", e);
+            
                 set_error_msg(error_msg_out, &format!("{}", e));
                 1
             }
@@ -140,7 +192,18 @@ pub unsafe extern "C" fn verify_zk_proof_v2_with_nbits(
     nbits_override: u32,
     error_msg_out: *mut c_char,
 ) -> i32 {
-    verify_zk_proof_inner(block_header, zk_proof, Some(nbits_override), error_msg_out)
+    println!("FFI ENTER verify_zk_proof_v2_with_nbits");
+
+    let rc = verify_zk_proof_inner(
+        block_header,
+        zk_proof,
+        Some(nbits_override),
+        error_msg_out,
+    );
+
+    println!("FFI EXIT verify_zk_proof_v2_with_nbits rc={}", rc);
+
+    rc
 }
 
 /// Verify a V1 (version 1, master-format) ZK proof.
@@ -201,6 +264,8 @@ pub unsafe extern "C" fn verify_zk_proof_v1(
                 0
             }
             Err(e) => {
+            
+            println!("VERIFY ERROR = {}", e);
                 set_error_msg(error_msg_out, &format!("{}", e));
                 1
             }
