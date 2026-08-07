@@ -202,6 +202,8 @@ println!("=================================");
 /// * Adjusted difficulty bound as U256
 pub fn extract_difficulty_bound(nbits: u32, config: &MiningConfiguration) -> U256 {
     let target_difficulty = nbits_to_difficulty(nbits);
+    println!("TARGET DIFFICULTY = {:x}", target_difficulty);
+    
     let h = config.rows_pattern.size() as usize;
     let w = config.cols_pattern.size() as usize;
     let tile_size = h * w;

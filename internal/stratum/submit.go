@@ -251,9 +251,9 @@ log.Printf("JOB PTR VERIFY=%p ID=%s HEIGHT=%d", job, job.ID, job.Height)
 log.Println("A")
 
 err = zkpow.VerifyWithNBits(
-job.HeaderBytes,
-job.ZKProof,
-shareBits,
+    job.HeaderBytes,
+    job.ZKProof,
+    networkBits,   // ✅ ЕТО ТОВА
 )
 
 log.Println("B")
