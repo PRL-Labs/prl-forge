@@ -14,6 +14,7 @@ type Pool struct {
 	engine      *Engine
 	history     *history.PoolManager
 	roundHeight int64
+
 }
 
 func New() *Pool {
@@ -74,3 +75,4 @@ func (p *Pool) SetRoundHeight(height int64) {
 func (p *Pool) RoundHeight() int64 {
 	return p.roundHeight
 }
+

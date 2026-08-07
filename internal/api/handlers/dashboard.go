@@ -4,11 +4,14 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+  "time"
+  
 
 	"github.com/techobg/prl-forge/internal/pool"
 	"github.com/techobg/prl-forge/internal/services"
 	"github.com/techobg/prl-forge/internal/stats"
 )
+
 
 type DashboardResponse struct {
 	Pool    PoolInfo        `json:"pool"`
@@ -32,14 +35,15 @@ type NetworkInfo struct {
 	Height          int64   `json:"height"`
 	Difficulty      int64   `json:"difficulty"`
 	NetworkHashrate float64 `json:"networkHashrate"`
-	PoolHashrate    int64   `json:"poolHashrate"`
+PoolHashrate float64 `json:"poolHashrate"`
 }
 
 type RoundInfo struct {
 	Shares uint64  `json:"shares"`
-	Work string `json:"work"`
+	Work   string  `json:"work"`
 	Luck   float64 `json:"luck"`
 }
+
 
 func Dashboard(w http.ResponseWriter, r *http.Request) {
 	tpl := stats.Template()
@@ -81,25 +85,26 @@ func Dashboard(w http.ResponseWriter, r *http.Request) {
 
 	if Pool != nil {
 		round.Shares = Pool.Round().Shares()
-	round.Work = Pool.Round().Work().String()
-    
-    log.Printf(
-    "DASHBOARD difficulty=%d roundWork=%s",
-    difficulty,
-    Pool.Round().Work().String(),
-)
+		round.Work = Pool.Round().Work().String()
 
-		round.Luck = Pool.Round().Luck(float64(difficulty))
-	}
+var luck float64
 
+if rawDifficulty > 0 {
+	luck = Pool.Round().Luck(rawDifficulty)
+} else {
+	luck = 0
+}
 
-log.Printf(
-    "ROUND TEST -> shares=%d work=%s diff=%d luck=%.8f",
-    round.Shares,
-    round.Work,
-    difficulty,
-    round.Luck,
-)
+round.Luck = luck
+}
+
+	log.Printf(
+		"ROUND TEST -> shares=%d work=%s diff=%d luck=%.8f",
+		round.Shares,
+		round.Work,
+		difficulty,
+		round.Luck,
+	)
 
 	resp := DashboardResponse{
 		Pool: PoolInfo{
@@ -119,12 +124,21 @@ log.Printf(
 			Height:          height,
 			Difficulty:      difficulty,
 			NetworkHashrate: networkHashrate,
-			PoolHashrate: func() int64 {
-				if Pool == nil {
-					return 0
-				}
-				return Pool.TotalHashrate()
-			}(),
+PoolHashrate: func() float64 {
+	if Pool == nil {
+		return 0
+	}
+
+	var total float64
+
+	for _, w := range Pool.Workers().List() {
+		if time.Since(w.LastSeen) < 2*time.Minute {
+			total += w.Hashrate
+		}
+	}
+
+	return total
+}(),
 		},
 		Round:  round,
 		Reward: reward,

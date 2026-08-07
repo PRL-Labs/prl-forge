@@ -5,8 +5,7 @@ import (
 	"net/http"
 	"time"
   "github.com/techobg/prl-forge/internal/pool"
-  "log"
-)
+  )
 
 type MinerResponse struct {
 	Wallet   string  `json:"wallet"`
@@ -31,8 +30,6 @@ type MinerDashboardResponse struct {
 func Miners(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-
-
 	if Pool == nil {
 		json.NewEncoder(w).Encode([]MinerResponse{})
 		return
@@ -44,14 +41,13 @@ func Miners(w http.ResponseWriter, r *http.Request) {
 		online   bool
 	}
 
-	stats := make(map[string]*stat)
+	miners := make(map[string]*stat)
 
 	for _, worker := range Pool.Workers().List() {
-
-		s, ok := stats[worker.Wallet]
+		s, ok := miners[worker.Wallet]
 		if !ok {
 			s = &stat{}
-			stats[worker.Wallet] = s
+			miners[worker.Wallet] = s
 		}
 
 		s.workers++
@@ -62,10 +58,9 @@ func Miners(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	resp := make([]MinerResponse, 0, len(stats))
+	resp := make([]MinerResponse, 0, len(miners))
 
-	for wallet, s := range stats {
-
+	for wallet, s := range miners {
 		status := "Offline"
 		if s.online {
 			status = "Online"
@@ -89,16 +84,6 @@ func Miner(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "pool unavailable", http.StatusServiceUnavailable)
 		return
 	}
-  
-  rawDifficulty := float64(0)
-
-if pool.Client() != nil {
-	if diff, err := pool.Client().GetDifficulty(); err == nil {
-		rawDifficulty = diff
-	}
-
-  }
-
 
 	wallet := r.URL.Query().Get("wallet")
 	if wallet == "" {
@@ -106,15 +91,21 @@ if pool.Client() != nil {
 		return
 	}
 
+	// ? difficulty 
+	rawDifficulty := float64(0)
+	if pool.Client() != nil {
+		if diff, err := pool.Client().GetDifficulty(); err == nil {
+			rawDifficulty = diff
+		}
+	}
+
 	var (
-		hashrate    float64
-		online      int
-		lastSeen    time.Time
-		
+		hashrate float64
+		online   int
+		lastSeen time.Time
 	)
 
 	for _, worker := range Pool.Workers().List() {
-
 		if worker.Wallet != wallet {
 			continue
 		}
@@ -124,28 +115,20 @@ if pool.Client() != nil {
 			online++
 		}
 
-		
-
 		if worker.LastSeen.After(lastSeen) {
 			lastSeen = worker.LastSeen
 		}
 	}
 
-  
-var personalLuck float64
+	round := Pool.MinerRounds().Get(wallet)
 
-round := Pool.MinerRounds().Get(wallet)
+	var personalLuck float64
 
-if round != nil {
-
-log.Printf(
-    "MINER difficulty=%.0f roundWork=%.0f",
-    rawDifficulty,
-    round.Work(),
-)
-
-personalLuck = round.Luck(rawDifficulty)
-}
+	if round != nil && rawDifficulty > 0 {
+		personalLuck = round.Luck(rawDifficulty)
+	} else {
+		personalLuck = 0
+	}
 
 	json.NewEncoder(w).Encode(MinerDashboardResponse{
 		Wallet:          wallet,

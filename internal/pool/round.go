@@ -16,6 +16,9 @@ type RoundStats struct {
 	started    time.Time
 	lastSample time.Time
 	lastWork   *big.Int
+  hashrate float64
+   totalDifficulty float64
+   totalDiff float64
 }
 
 func NewRoundStats() *RoundStats {
@@ -26,6 +29,7 @@ func NewRoundStats() *RoundStats {
 		lastWork:   new(big.Int),
 		started:    now,
 		lastSample: now,
+   
 	}
 }
 
@@ -92,6 +96,64 @@ func (r *RoundStats) SampleWork() (*big.Int, float64) {
 	return work, elapsed
 }
 
+
+func (r *RoundStats) Hashrate() float64 {
+	r.mu.RLock()
+	work := new(big.Int).Set(r.work)
+	started := r.started
+	r.mu.RUnlock()
+
+	seconds := time.Since(started).Seconds()
+	if seconds <= 0 {
+		return 0
+	}
+
+	// work -> float
+	workFloat := new(big.Float).SetInt(work)
+
+	// work > hashes (divide by 2^32)
+	hashes := new(big.Float).Quo(
+		workFloat,
+		new(big.Float).SetFloat64(4294967296),
+	)
+
+	// hashes / seconds
+	hashrateFloat := new(big.Float).Quo(
+		hashes,
+		big.NewFloat(seconds),
+	)
+
+	newHashrate, _ := hashrateFloat.Float64()
+
+	// smoothing
+	alpha := 0.3
+	r.hashrate = r.hashrate*(1-alpha) + newHashrate*alpha
+
+	return r.hashrate
+}
 func (r *RoundStats) Luck(networkDifficulty float64) float64 {
-	return 0
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	if networkDifficulty <= 0 {
+		return 0
+	}
+
+	// expected shares = difficulty (diff1 shares)
+	expectedShares := networkDifficulty
+
+	if expectedShares == 0 {
+		return 0
+	}
+
+	luck := float64(r.shares) / expectedShares
+
+	return luck * 100
+}
+
+func (r *RoundStats) AddDifficulty(diff float64) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	r.totalDiff += diff
 }
