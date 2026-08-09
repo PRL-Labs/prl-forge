@@ -68,7 +68,7 @@ func PublicStats(w http.ResponseWriter, r *http.Request) {
 		APIURL:                  "https://prlforge.com/api/v1/public",
 		StratumHost:             "pool.prlforge.com",
 		StratumPort:             3333,
-		Fee:                     1.5,
+		Fee:                     0.9,
 		Hashrate:                poolHashrate,
 		HashrateRawHPS:          poolHashrate,
 		Workers:                 workers,

@@ -78,7 +78,7 @@ func Dashboard(w http.ResponseWriter, r *http.Request) {
 
 	reward := services.Reward{}
 	if tpl != nil {
-		reward = services.CurrentReward(tpl, 1.5)
+		reward = services.CurrentReward(tpl, 0.9)
 	}
 
 	round := RoundInfo{}

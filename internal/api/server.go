@@ -52,6 +52,7 @@ func New(cfg *config.Config) *Server {
 	mux.HandleFunc("/api/v1/miner", handlers.Miner)
   mux.HandleFunc("/api/v1/activity/miner", handlers.MinerActivity)
 	mux.HandleFunc("/api/v1/blocks", handlers.Blocks)
+  mux.HandleFunc("/api/debug/add-block", handlers.DebugAddBlock)
 	mux.HandleFunc("/api/v1/history/pool", handlers.PoolHistory)
 	mux.HandleFunc("/api/v1/history/worker", handlers.WorkerHistory)
 	mux.HandleFunc("/api/v1/history/miner", handlers.MinerHistory)
